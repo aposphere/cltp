@@ -5,7 +5,7 @@
 -- Dumped from database version 13.4 (Debian 13.4-4.pgdg110+1)
 -- Dumped by pg_dump version 13.4
 
--- Started on 2021-10-06 09:50:12 UTC
+-- Started on 2021-10-07 07:38:42 UTC
 
 SET statement_timeout = 0;
 SET lock_timeout = 0;
@@ -23,8 +23,8 @@ SET default_tablespace = '';
 SET default_table_access_method = heap;
 
 --
--- TOC entry 206 (class 1259 OID 24713)
--- Name: connection_plate_pcr_plate; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 200 (class 1259 OID 33245)
+-- Name: connection_plate_pcr_plate; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.connection_plate_pcr_plate (
@@ -35,9 +35,11 @@ CREATE TABLE public.connection_plate_pcr_plate (
 );
 
 
+ALTER TABLE public.connection_plate_pcr_plate OWNER TO postgres;
+
 --
--- TOC entry 203 (class 1259 OID 24678)
--- Name: connection_pool_rack; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 201 (class 1259 OID 33249)
+-- Name: connection_pool_rack; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.connection_pool_rack (
@@ -49,9 +51,11 @@ CREATE TABLE public.connection_pool_rack (
 );
 
 
+ALTER TABLE public.connection_pool_rack OWNER TO postgres;
+
 --
--- TOC entry 204 (class 1259 OID 24693)
--- Name: connection_rack_plate; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 202 (class 1259 OID 33254)
+-- Name: connection_rack_plate; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.connection_rack_plate (
@@ -63,9 +67,11 @@ CREATE TABLE public.connection_rack_plate (
 );
 
 
+ALTER TABLE public.connection_rack_plate OWNER TO postgres;
+
 --
--- TOC entry 211 (class 1259 OID 24787)
--- Name: interpretation; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 203 (class 1259 OID 33259)
+-- Name: interpretation; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.interpretation (
@@ -77,9 +83,11 @@ CREATE TABLE public.interpretation (
 );
 
 
+ALTER TABLE public.interpretation OWNER TO postgres;
+
 --
--- TOC entry 205 (class 1259 OID 24708)
--- Name: pcr_plate; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 204 (class 1259 OID 33266)
+-- Name: pcr_plate; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.pcr_plate (
@@ -88,9 +96,11 @@ CREATE TABLE public.pcr_plate (
 );
 
 
+ALTER TABLE public.pcr_plate OWNER TO postgres;
+
 --
--- TOC entry 200 (class 1259 OID 16388)
--- Name: plate; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 205 (class 1259 OID 33270)
+-- Name: plate; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.plate (
@@ -99,9 +109,11 @@ CREATE TABLE public.plate (
 );
 
 
+ALTER TABLE public.plate OWNER TO postgres;
+
 --
--- TOC entry 201 (class 1259 OID 16396)
--- Name: pool; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 206 (class 1259 OID 33274)
+-- Name: pool; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.pool (
@@ -110,9 +122,11 @@ CREATE TABLE public.pool (
 );
 
 
+ALTER TABLE public.pool OWNER TO postgres;
+
 --
--- TOC entry 202 (class 1259 OID 24673)
--- Name: rack; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 207 (class 1259 OID 33278)
+-- Name: rack; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.rack (
@@ -122,9 +136,11 @@ CREATE TABLE public.rack (
 );
 
 
+ALTER TABLE public.rack OWNER TO postgres;
+
 --
--- TOC entry 213 (class 1259 OID 33073)
--- Name: mapping; Type: VIEW; Schema: public; Owner: -
+-- TOC entry 208 (class 1259 OID 33283)
+-- Name: mapping; Type: VIEW; Schema: public; Owner: postgres
 --
 
 CREATE VIEW public.mapping AS
@@ -145,24 +161,28 @@ CREATE VIEW public.mapping AS
      JOIN public.pool ON (((connection_pool_rack.pool_id)::text = (pool.pool_id)::text)));
 
 
+ALTER TABLE public.mapping OWNER TO postgres;
+
 --
--- TOC entry 208 (class 1259 OID 24736)
--- Name: pool_arrival; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 209 (class 1259 OID 33288)
+-- Name: pool_arrival; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.pool_arrival (
     id uuid NOT NULL,
     pool_id character varying(64) NOT NULL,
     technician character varying(64) NOT NULL,
-    source text NOT NULL,
+    source text,
     comment text,
     creation_timestamp timestamp without time zone DEFAULT CURRENT_TIMESTAMP NOT NULL
 );
 
 
+ALTER TABLE public.pool_arrival OWNER TO postgres;
+
 --
--- TOC entry 207 (class 1259 OID 24728)
--- Name: probe_order; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 210 (class 1259 OID 33295)
+-- Name: probe_order; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.probe_order (
@@ -186,9 +206,11 @@ CREATE TABLE public.probe_order (
 );
 
 
+ALTER TABLE public.probe_order OWNER TO postgres;
+
 --
--- TOC entry 212 (class 1259 OID 33021)
--- Name: probe_result; Type: VIEW; Schema: public; Owner: -
+-- TOC entry 211 (class 1259 OID 33302)
+-- Name: probe_result; Type: VIEW; Schema: public; Owner: postgres
 --
 
 CREATE VIEW public.probe_result AS
@@ -213,9 +235,11 @@ CREATE VIEW public.probe_result AS
      JOIN public.interpretation ON ((probe_order.barcode_nummer = (interpretation.pool_id)::text)));
 
 
+ALTER TABLE public.probe_result OWNER TO postgres;
+
 --
--- TOC entry 209 (class 1259 OID 24749)
--- Name: result; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 212 (class 1259 OID 33307)
+-- Name: result; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.result (
@@ -226,9 +250,11 @@ CREATE TABLE public.result (
 );
 
 
+ALTER TABLE public.result OWNER TO postgres;
+
 --
--- TOC entry 210 (class 1259 OID 24762)
--- Name: result_entry; Type: TABLE; Schema: public; Owner: -
+-- TOC entry 213 (class 1259 OID 33314)
+-- Name: result_entry; Type: TABLE; Schema: public; Owner: postgres
 --
 
 CREATE TABLE public.result_entry (
@@ -242,9 +268,11 @@ CREATE TABLE public.result_entry (
 );
 
 
+ALTER TABLE public.result_entry OWNER TO postgres;
+
 --
--- TOC entry 214 (class 1259 OID 33078)
--- Name: unused_rack; Type: VIEW; Schema: public; Owner: -
+-- TOC entry 214 (class 1259 OID 33321)
+-- Name: unused_rack; Type: VIEW; Schema: public; Owner: postgres
 --
 
 CREATE VIEW public.unused_rack AS
@@ -257,9 +285,11 @@ CREATE VIEW public.unused_rack AS
   WHERE (connection_rack_plate.plate_id IS NULL);
 
 
+ALTER TABLE public.unused_rack OWNER TO postgres;
+
 --
--- TOC entry 2952 (class 2606 OID 24794)
--- Name: interpretation interpretation_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2936 (class 2606 OID 33326)
+-- Name: interpretation interpretation_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.interpretation
@@ -267,8 +297,8 @@ ALTER TABLE ONLY public.interpretation
 
 
 --
--- TOC entry 2936 (class 2606 OID 33038)
--- Name: connection_pool_rack layout; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2930 (class 2606 OID 33328)
+-- Name: connection_pool_rack layout; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.connection_pool_rack
@@ -276,8 +306,8 @@ ALTER TABLE ONLY public.connection_pool_rack
 
 
 --
--- TOC entry 2940 (class 2606 OID 24712)
--- Name: pcr_plate pcr_plate_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2940 (class 2606 OID 33330)
+-- Name: pcr_plate pcr_plate_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.pcr_plate
@@ -285,8 +315,8 @@ ALTER TABLE ONLY public.pcr_plate
 
 
 --
--- TOC entry 2928 (class 2606 OID 16455)
--- Name: plate plate_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2942 (class 2606 OID 33332)
+-- Name: plate plate_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.plate
@@ -294,8 +324,8 @@ ALTER TABLE ONLY public.plate
 
 
 --
--- TOC entry 2946 (class 2606 OID 24743)
--- Name: pool_arrival pool_arrival_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2948 (class 2606 OID 33334)
+-- Name: pool_arrival pool_arrival_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.pool_arrival
@@ -303,8 +333,8 @@ ALTER TABLE ONLY public.pool_arrival
 
 
 --
--- TOC entry 2930 (class 2606 OID 16400)
--- Name: pool pool_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2944 (class 2606 OID 33336)
+-- Name: pool pool_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.pool
@@ -312,8 +342,8 @@ ALTER TABLE ONLY public.pool
 
 
 --
--- TOC entry 2944 (class 2606 OID 24735)
--- Name: probe_order probe_order_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2950 (class 2606 OID 33338)
+-- Name: probe_order probe_order_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.probe_order
@@ -321,8 +351,8 @@ ALTER TABLE ONLY public.probe_order
 
 
 --
--- TOC entry 2932 (class 2606 OID 33051)
--- Name: rack rack_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2946 (class 2606 OID 33340)
+-- Name: rack rack_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.rack
@@ -330,8 +360,8 @@ ALTER TABLE ONLY public.rack
 
 
 --
--- TOC entry 2950 (class 2606 OID 24769)
--- Name: result_entry result_entry_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2954 (class 2606 OID 33342)
+-- Name: result_entry result_entry_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.result_entry
@@ -339,8 +369,8 @@ ALTER TABLE ONLY public.result_entry
 
 
 --
--- TOC entry 2948 (class 2606 OID 24756)
--- Name: result result_pkey; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2952 (class 2606 OID 33344)
+-- Name: result result_pkey; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.result
@@ -348,8 +378,8 @@ ALTER TABLE ONLY public.result
 
 
 --
--- TOC entry 2942 (class 2606 OID 24717)
--- Name: connection_plate_pcr_plate uq_connection_plate_pcr_plate; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2928 (class 2606 OID 33346)
+-- Name: connection_plate_pcr_plate uq_connection_plate_pcr_plate; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.connection_plate_pcr_plate
@@ -357,127 +387,132 @@ ALTER TABLE ONLY public.connection_plate_pcr_plate
 
 
 --
--- TOC entry 2938 (class 2606 OID 24697)
--- Name: connection_rack_plate uq_connection_rack_plate; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2932 (class 2606 OID 33350)
+-- Name: connection_pool_rack uq_connection_pool_rack; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
-
-ALTER TABLE ONLY public.connection_rack_plate
-    ADD CONSTRAINT uq_connection_rack_plate UNIQUE (rack_id, rack_i, plate_id, coordinate);
 
 ALTER TABLE ONLY public.connection_pool_rack
     ADD CONSTRAINT uq_connection_pool_rack UNIQUE (pool_id, rack_id, rack_i, coordinate);
 
 
 --
--- TOC entry 2954 (class 2606 OID 24806)
--- Name: interpretation uq_interpretation_result_entry_pool; Type: CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2934 (class 2606 OID 33348)
+-- Name: connection_rack_plate uq_connection_rack_plate; Type: CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.connection_rack_plate
+    ADD CONSTRAINT uq_connection_rack_plate UNIQUE (rack_id, rack_i, plate_id, coordinate);
+
+
+--
+-- TOC entry 2938 (class 2606 OID 33352)
+-- Name: interpretation uq_interpretation_result_entry_pool; Type: CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.interpretation
     ADD CONSTRAINT uq_interpretation_result_entry_pool UNIQUE (result_entry_id, pool_id, interpretation);
 
 
-
 --
--- TOC entry 2960 (class 2606 OID 24723)
--- Name: connection_plate_pcr_plate fk_connection_plaate_pcr_plate_pcr_plate; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.connection_plate_pcr_plate
-    ADD CONSTRAINT fk_connection_plate_pcr_plate_pcr_plate FOREIGN KEY (pcr_plate_id) REFERENCES public.pcr_plate(pcr_plate_id) ON DELETE CASCADE ON UPDATE CASCADE;
-
-
---
--- TOC entry 2959 (class 2606 OID 24718)
--- Name: connection_plate_pcr_plate fk_connection_plate_pcr_plate_plate; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2955 (class 2606 OID 33353)
+-- Name: connection_plate_pcr_plate fk_connection_plate_pcr_plate_pcr_plate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.connection_plate_pcr_plate
-    ADD CONSTRAINT fk_connection_plate_pcr_plate_plate FOREIGN KEY (plate_id) REFERENCES public.plate(plate_id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_connection_plate_pcr_plate_pcr_plate FOREIGN KEY (pcr_plate_id) REFERENCES public.pcr_plate(pcr_plate_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2955 (class 2606 OID 24683)
--- Name: connection_pool_rack fk_connection_pool_rack_pool; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2956 (class 2606 OID 33358)
+-- Name: connection_plate_pcr_plate fk_connection_plate_pcr_plate_plate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.connection_plate_pcr_plate
+    ADD CONSTRAINT fk_connection_plate_pcr_plate_plate FOREIGN KEY (plate_id) REFERENCES public.plate(plate_id) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 2957 (class 2606 OID 33363)
+-- Name: connection_pool_rack fk_connection_pool_rack_pool; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.connection_pool_rack
-    ADD CONSTRAINT fk_connection_pool_rack_pool FOREIGN KEY (pool_id) REFERENCES public.pool(pool_id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_connection_pool_rack_pool FOREIGN KEY (pool_id) REFERENCES public.pool(pool_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2956 (class 2606 OID 33052)
--- Name: connection_pool_rack fk_connection_pool_rack_rack; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2958 (class 2606 OID 33368)
+-- Name: connection_pool_rack fk_connection_pool_rack_rack; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.connection_pool_rack
-    ADD CONSTRAINT fk_connection_pool_rack_rack FOREIGN KEY (rack_id, rack_i) REFERENCES public.rack(rack_id, i) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_connection_pool_rack_rack FOREIGN KEY (rack_id, rack_i) REFERENCES public.rack(rack_id, i) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2957 (class 2606 OID 24703)
--- Name: connection_rack_plate fk_connection_rack_plate_plate; Type: FK CONSTRAINT; Schema: public; Owner: -
---
-
-ALTER TABLE ONLY public.connection_rack_plate
-    ADD CONSTRAINT fk_connection_rack_plate_plate FOREIGN KEY (plate_id) REFERENCES public.plate(plate_id) ON DELETE CASCADE ON UPDATE CASCADE;
-
-
---
--- TOC entry 2958 (class 2606 OID 33068)
--- Name: connection_rack_plate fk_connection_rack_plate_rack; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2960 (class 2606 OID 33408)
+-- Name: connection_rack_plate fk_connection_rack_plate_plate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.connection_rack_plate
-    ADD CONSTRAINT fk_connection_rack_plate_rack FOREIGN KEY (rack_id, rack_i) REFERENCES public.rack(rack_id, i) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_connection_rack_plate_plate FOREIGN KEY (plate_id) REFERENCES public.plate(plate_id) ON UPDATE CASCADE ON DELETE CASCADE NOT VALID;
 
 
 --
--- TOC entry 2965 (class 2606 OID 24800)
--- Name: interpretation fk_interpretation_pool; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2959 (class 2606 OID 33378)
+-- Name: connection_rack_plate fk_connection_rack_plate_rack; Type: FK CONSTRAINT; Schema: public; Owner: postgres
+--
+
+ALTER TABLE ONLY public.connection_rack_plate
+    ADD CONSTRAINT fk_connection_rack_plate_rack FOREIGN KEY (rack_id, rack_i) REFERENCES public.rack(rack_id, i) ON DELETE CASCADE;
+
+
+--
+-- TOC entry 2961 (class 2606 OID 33383)
+-- Name: interpretation fk_interpretation_pool; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.interpretation
-    ADD CONSTRAINT fk_interpretation_pool FOREIGN KEY (pool_id) REFERENCES public.pool(pool_id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_interpretation_pool FOREIGN KEY (pool_id) REFERENCES public.pool(pool_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2964 (class 2606 OID 24795)
--- Name: interpretation fk_interpretation_result; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2962 (class 2606 OID 33388)
+-- Name: interpretation fk_interpretation_result; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.interpretation
-    ADD CONSTRAINT fk_interpretation_result FOREIGN KEY (result_entry_id) REFERENCES public.result_entry(id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_interpretation_result FOREIGN KEY (result_entry_id) REFERENCES public.result_entry(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2961 (class 2606 OID 24744)
--- Name: pool_arrival fk_pool_arrival_pool; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2963 (class 2606 OID 33393)
+-- Name: pool_arrival fk_pool_arrival_pool; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.pool_arrival
-    ADD CONSTRAINT fk_pool_arrival_pool FOREIGN KEY (pool_id) REFERENCES public.pool(pool_id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_pool_arrival_pool FOREIGN KEY (pool_id) REFERENCES public.pool(pool_id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2963 (class 2606 OID 24770)
--- Name: result_entry fk_result_entry_result; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2965 (class 2606 OID 33398)
+-- Name: result_entry fk_result_entry_result; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.result_entry
-    ADD CONSTRAINT fk_result_entry_result FOREIGN KEY (result_id) REFERENCES public.result(id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_result_entry_result FOREIGN KEY (result_id) REFERENCES public.result(id) ON DELETE CASCADE;
 
 
 --
--- TOC entry 2962 (class 2606 OID 24757)
--- Name: result fk_result_pcr_plate; Type: FK CONSTRAINT; Schema: public; Owner: -
+-- TOC entry 2964 (class 2606 OID 33403)
+-- Name: result fk_result_pcr_plate; Type: FK CONSTRAINT; Schema: public; Owner: postgres
 --
 
 ALTER TABLE ONLY public.result
-    ADD CONSTRAINT fk_result_pcr_plate FOREIGN KEY (pcr_plate_id) REFERENCES public.pcr_plate(pcr_plate_id) ON DELETE CASCADE ON UPDATE CASCADE;
+    ADD CONSTRAINT fk_result_pcr_plate FOREIGN KEY (pcr_plate_id) REFERENCES public.pcr_plate(pcr_plate_id) ON DELETE CASCADE;
 
 
--- Completed on 2021-10-06 09:50:12 UTC
+-- Completed on 2021-10-07 07:38:42 UTC
 
 --
 -- PostgreSQL database dump complete

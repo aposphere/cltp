@@ -8,6 +8,7 @@ import { PoolArrival } from 'src/app/interfaces/pool-arrival';
 import { ConfigService } from 'src/app/services/config.service';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
+import { ToastsService } from 'src/app/services/toasts.service';
 import { v4 } from 'uuid';
 import { sqlValueFormatter } from '../helpers/sql-value-formatter';
 
@@ -34,7 +35,8 @@ export class RegisterPoolComponent implements OnDestroy
   constructor(
     public dbService: DBService,
     public configService: ConfigService,
-    public stateService: StateService
+    public stateService: StateService,
+    public toastsService: ToastsService
   )
   {
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
@@ -81,7 +83,7 @@ export class RegisterPoolComponent implements OnDestroy
     {
       await this.dbService.query(q)
 
-      // alert("Data successfully inserted into the database.")
+      this.toastsService.show(`Pool '${ pool.pool_id }' successfully inserted into the database`, { classname: 'bg-success text-light' })
     }
     catch (e)
     {

@@ -4,6 +4,7 @@ import { Plate } from 'src/app/interfaces/plate';
 import { Rack } from 'src/app/interfaces/rack';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
+import { ToastsService } from 'src/app/services/toasts.service';
 import { v4 } from 'uuid';
 
 const steps = ["identify-plate", "scan-racks", "done"] as const
@@ -46,7 +47,8 @@ export class RackPlateMappingComponent implements OnDestroy
 
   constructor(
     public dbService: DBService,
-    public stateService: StateService
+    public stateService: StateService,
+    public toastsService: ToastsService
   )
   {
   }
@@ -87,7 +89,7 @@ export class RackPlateMappingComponent implements OnDestroy
       // Check for existing plate and prompt
       if (existingPlate)
       {
-        alert("A Plate can only be used once!")
+        this.toastsService.show(`A Plate can only be used once!`, { classname: 'bg-danger text-light' })
         return
       }
     }
@@ -149,7 +151,7 @@ export class RackPlateMappingComponent implements OnDestroy
         // Check for unused existing pool and prompt
         if (!existingRack)
         {
-          alert("This Rack has not been registered in the system!")
+          this.toastsService.show(`This Rack has not been registered in the system!`, { classname: 'bg-danger text-light' })
           return
         }
       }
@@ -172,7 +174,7 @@ export class RackPlateMappingComponent implements OnDestroy
         // Check for unused existing rack and prompt
         if (!previousRack)
         {
-          alert("This Rack has already been mapped to a different Plate. Please scan it again as a different iteration to prevent ambiguety!")
+          this.toastsService.show(`This Rack has already been mapped to a different Plate. Please scan it again as a different iteration to prevent ambiguety!`, { classname: 'bg-danger text-light' })
           return
         }
       }
@@ -247,7 +249,7 @@ export class RackPlateMappingComponent implements OnDestroy
       {
         await this.dbService.query(q)
 
-        alert("Data successfully inserted into the database.")
+        this.toastsService.show(`Plate '${ this.plateId }' successfully inserted into the database`, { classname: 'bg-success text-light' })
       }
       catch (e)
       {

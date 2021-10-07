@@ -7,6 +7,7 @@ import { AppComponent } from './app.component';
 
 import { HomeComponent } from './components/home/home.component';
 import { SystemPopupsComponent } from './components/system/system-popups.component';
+import { ToastsContainerComponent } from './components/system/toasts-container.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 
 import { UploadProbeOrdersComponent } from './components/upload-probe-orders/upload-probe-orders.component';
@@ -27,6 +28,7 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
     AppComponent,
     HomeComponent,
     SystemPopupsComponent,
+    ToastsContainerComponent,
     PageNotFoundComponent,
     UploadProbeOrdersComponent,
     RegisterPoolComponent,

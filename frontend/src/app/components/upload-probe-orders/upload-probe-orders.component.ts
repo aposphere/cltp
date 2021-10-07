@@ -5,6 +5,7 @@ import { Pool } from 'src/app/interfaces/pool';
 import { ProbeOrder, ProbeOrderJSON } from 'src/app/interfaces/probe-order';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
+import { ToastsService } from 'src/app/services/toasts.service';
 import { v4 } from 'uuid';
 import { jsonValidator } from '../helpers/json-validator';
 import { probeOrderValidator } from '../helpers/probe-order-validator';
@@ -33,7 +34,8 @@ export class UploadProbeOrdersComponent implements OnDestroy
 
   constructor(
     public dbService: DBService,
-    public stateService: StateService
+    public stateService: StateService,
+    public toastsService: ToastsService
   )
   {
   }
@@ -102,7 +104,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
     {
       await this.dbService.query(q)
 
-      alert("Data successfully inserted into the database.")
+      this.toastsService.show(`Probe Order successfully inserted into the database`, { classname: 'bg-success text-light' })
     }
     catch (e)
     {
@@ -127,7 +129,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
     {
       await this.dbService.query(q.join(""))
 
-      alert("Data successfully inserted into the database.")
+      this.toastsService.show(`${ q.length } Probe Orders successfully inserted into the database`, { classname: 'bg-success text-light' })
     }
     catch (e)
     {

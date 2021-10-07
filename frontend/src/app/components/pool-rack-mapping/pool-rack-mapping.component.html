@@ -58,15 +58,23 @@
     </ngb-alert>
 
     <div class="border rounded bg-light p-3">
-      <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="pool-input-mode" [(ngModel)]="poolInputMode">
-        <label ngbButtonLabel class="btn-primary">
-          <input ngbButton type="radio" value="manual"> Manual
-        </label>
-        <label ngbButtonLabel class="btn-primary">
-          <input ngbButton type="radio" value="camera"> Camera
-        </label>
-        <label ngbButtonLabel class="btn-primary">
-          <input ngbButton type="radio" value="scanner"> Scanner
+      <div class="d-flex align-items-center">
+        <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="pool-input-mode" [(ngModel)]="poolInputMode">
+          <label ngbButtonLabel class="btn-primary">
+            <input ngbButton type="radio" value="manual"> Manual
+          </label>
+          <label ngbButtonLabel class="btn-primary">
+            <input ngbButton type="radio" value="camera"> Camera
+          </label>
+          <label ngbButtonLabel class="btn-primary">
+            <input ngbButton type="radio" value="scanner"> Scanner
+          </label>
+        </div>
+
+        <span class="flex-grow-1"></span>
+
+        <label class="btn-primary" ngbButtonLabel>
+          <input type="checkbox" ngbButton [(ngModel)]="autoRegisterNewPools"> Auto Register New Pools
         </label>
       </div>
 

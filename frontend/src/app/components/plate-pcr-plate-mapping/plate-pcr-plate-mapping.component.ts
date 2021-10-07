@@ -5,6 +5,7 @@ import { PcrPlate } from 'src/app/interfaces/pcr-plate';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
 import { v4 } from 'uuid';
+import { ToastsService } from 'src/app/services/toasts.service';
 
 const steps = ["identify-pcr-plate", "scan-plates", "done"] as const
 type Step = typeof steps[number];
@@ -46,7 +47,8 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
   constructor(
     public dbService: DBService,
-    public stateService: StateService
+    public stateService: StateService,
+    public toastsService: ToastsService
   )
   {
   }
@@ -87,7 +89,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       // Check for existing pcr plate and prompt
       if (existingPlate)
       {
-        alert("A PCR Plate can only be used once!")
+        this.toastsService.show(`A PCR Plate can only be used once!`, { classname: 'bg-danger text-light' })
         return
       }
     }
@@ -150,7 +152,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
         // Check for unused existing plate and prompt
         if (!existingPlate)
         {
-          alert("This Plate has not been registered in the system!")
+          this.toastsService.show(`This Plate has not been registered in the system!`, { classname: 'bg-danger text-light' })
           return
         }
       }
@@ -172,7 +174,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
         // Check for existing mapping
         if (existingMapping)
         {
-          alert("This Plate has already been mapped to a different PCR Plate and cannot be used again!")
+          this.toastsService.show(`This Plate has already been mapped to a different PCR Plate and cannot be used again!`, { classname: 'bg-danger text-light' })
           return
         }
       }
@@ -228,7 +230,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       {
         await this.dbService.query(q)
 
-        alert("Data successfully inserted into the database.")
+        this.toastsService.show(`PCR Plate '${ this.pcrPlateId }' successfully inserted into the database`, { classname: 'bg-success text-light' })
       }
       catch (e)
       {

@@ -1,11 +1,17 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { Credentials } from 'src/app/interfaces/credentials';
 import { Plate } from 'src/app/interfaces/plate';
 import { Pool } from 'src/app/interfaces/pool';
+import { PoolArrival } from 'src/app/interfaces/pool-arrival';
 import { Rack } from 'src/app/interfaces/rack';
+import { ConfigService } from 'src/app/services/config.service';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
+import { ToastsService } from 'src/app/services/toasts.service';
 import { v4 } from 'uuid';
+import { sqlValueFormatter } from '../helpers/sql-value-formatter';
 
 const steps = ["identify-rack", "scan-pools", "done"] as const
 type Step = typeof steps[number];
@@ -18,6 +24,10 @@ type Step = typeof steps[number];
 })
 export class PoolRackMappingComponent implements OnDestroy
 {
+  credentials?: Credentials;
+
+  autoRegisterNewPools = true
+
   matrix =
   {
     x: ["1", "2", "3", "4", "5", "6"],
@@ -48,9 +58,12 @@ export class PoolRackMappingComponent implements OnDestroy
 
   constructor(
     public dbService: DBService,
-    public stateService: StateService
+    public configService: ConfigService,
+    public stateService: StateService,
+    public toastsService: ToastsService
   )
   {
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
   }
 
   reset(): void
@@ -175,8 +188,15 @@ export class PoolRackMappingComponent implements OnDestroy
         // Check for unused existing pool and prompt
         if (!existingPool)
         {
-          alert("This Pool has not been registered in the system!")
-          return
+          if (this.autoRegisterNewPools)
+          {
+            await this.autoRegisterPool(poolId)
+          }
+          else
+          {
+            this.toastsService.show(`This Pool has not been registered in the system! Either register it manually beforehand or use the 'Auto Register' option.`, { classname: 'bg-danger text-light' })
+            return
+          }
         }
       }
       catch (e)
@@ -197,7 +217,7 @@ export class PoolRackMappingComponent implements OnDestroy
         // Check for existing mapping
         if (existingMapping)
         {
-          alert("This Pool has already been mapped to another Rack!")
+          this.toastsService.show(`This Pool has already been mapped to another Rack!`, { classname: 'bg-danger text-light' })
           return
         }
       }
@@ -253,7 +273,7 @@ export class PoolRackMappingComponent implements OnDestroy
       {
         await this.dbService.query(q)
 
-        alert("Data successfully inserted into the database.")
+        this.toastsService.show(`Rack '${ this.rackId }' (iteration: ${this.rackI}) successfully inserted into the database`, { classname: 'bg-success text-light' })
       }
       catch (e)
       {
@@ -265,6 +285,44 @@ export class PoolRackMappingComponent implements OnDestroy
 
     this.reset()
   }
+
+  async autoRegisterPool(poolId: string): Promise<void>
+  {
+    if (!this.credentials) throw new Error("No user credentials found")
+
+    const poolArrival: PoolArrival =
+    {
+      id: v4(),
+      pool_id: poolId,
+      comment: "Auto Register during Pool/Rack mapping",
+      source: "",
+      technician: this.credentials.username
+    };
+
+    const pool: Pool =
+    {
+      pool_id: poolId
+    };
+
+    const q = `
+    INSERT INTO pool (pool_id) VALUES ('${pool.pool_id}');
+    INSERT INTO pool_arrival (${Object.keys(poolArrival).join(',')}) VALUES (${Object.values(poolArrival).map(sqlValueFormatter).join(',')});
+    `
+
+    try
+    {
+      await this.dbService.query(q)
+
+      this.toastsService.show(`Pool '${ poolId }' successfully inserted into the database`, { classname: 'bg-info text-dark', delay: 3000 })
+    }
+    catch (e)
+    {
+      alert("Could not insert into database, please check the logs for errors!")
+      console.error(e)
+      return
+    }
+  }
+
 
   ngOnDestroy(): void
   {

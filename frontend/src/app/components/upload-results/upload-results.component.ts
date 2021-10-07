@@ -16,6 +16,7 @@ import { v4 } from 'uuid';
 import map_transform_rack_to_plate from 'src/assets/map_transform_rack_to_plate.json'
 import map_transform_plate_to_pcr_plate from 'src/assets/map_transform_plate_to_pcr_plate.json'
 import { sqlValueFormatter } from '../helpers/sql-value-formatter';
+import { ToastsService } from 'src/app/services/toasts.service';
 
 const NEG_CONTROL_COORDINATE = "C24"
 const POS_CONTROL_COORDINATE = "P24"
@@ -69,7 +70,8 @@ export class UploadResultsComponent implements OnDestroy
 
   constructor(
     public dbService: DBService,
-    public stateService: StateService
+    public stateService: StateService,
+    public toastsService: ToastsService
   )
   {
   }
@@ -112,7 +114,7 @@ export class UploadResultsComponent implements OnDestroy
       // Check for existing plate and prompt
       if (!existingPlate)
       {
-        alert("This PCR Plate has not been registered in the system!")
+        this.toastsService.show(`This PCR Plate has not been registered in the system!`, { classname: 'bg-danger text-light' })
         return
       }
     }
@@ -315,7 +317,7 @@ export class UploadResultsComponent implements OnDestroy
     {
       await this.dbService.query(q.join(""))
 
-      alert("Data successfully inserted into the database.")
+      this.toastsService.show(`Results for PCR Plate '${ this.pcrPlateId }' successfully inserted into the database`, { classname: 'bg-success text-light' })
     }
     catch (e)
     {

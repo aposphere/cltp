@@ -4,7 +4,7 @@
 
 export const environment = {
   production: false,
-  backend: 'https://cltp.ll:8081'
+  backend: 'http://cltp.ll:8081'
 };
 
 /*

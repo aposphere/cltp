@@ -1,0 +1,18 @@
+<div
+  class="toast-container position-fixed top-0 start-50 translate-middle-x p-2"
+>
+  <ngb-toast
+    *ngFor="let toast of toastsService.toasts"
+    class="bottom-0 end-0"
+    [class]="toast.classname"
+    [autohide]="true"
+    [delay]="toast.delay || 5000"
+    (hide)="toastsService.remove(toast)"
+  >
+    <ng-template [ngIf]="isTemplate(toast)" [ngIfElse]="text">
+      <ng-template [ngTemplateOutlet]="castToastToTpl(toast)"></ng-template>
+    </ng-template>
+
+    <ng-template #text>{{ castToastToString(toast) }}</ng-template>
+  </ngb-toast>
+</div>
