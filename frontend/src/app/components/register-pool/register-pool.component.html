@@ -1,0 +1,51 @@
+<div class="container">
+  <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+    Register arriving pools.
+  </ngb-alert>
+
+  <form [formGroup]="form" (ngSubmit)="onSubmit()">
+    <div class="row">
+      <div class="col">
+        <div class="form-group">
+          <label for="register-pool-pool-id">Pool ID</label>
+          <input type="text" class="form-control" id="register-pool-pool-id" placeholder="Pool ID (Read QR-Code with Camera or Scanner)" formControlName="poolId">
+          <div class="py-1">
+            <button type="button" class="btn btn-sm btn-primary" [class.active]="scannerEnabled" (click)="scannerEnabled = !scannerEnabled">
+              <span *ngIf="!scannerEnabled">Start Camera</span>
+              <span *ngIf="scannerEnabled">Stop Camera</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col">
+        <div class="form-group">
+          <label for="register-pool-source">Source (optional)</label>
+          <input type="text" class="form-control" id="register-pool-source" placeholder="Source" formControlName="source">
+        </div>
+      </div>
+      <div class="col">
+        <div class="form-group">
+          <label for="register-pool-comment">Comment (optional)</label>
+          <input type="text" class="form-control" id="register-pool-comment" placeholder="Comment" formControlName="comment">
+        </div>
+      </div>
+    </div>
+    <div *ngIf="scannerEnabled" class="row">
+      <div class="col-2">
+        <div class="border rounded">
+          <zxing-scanner
+            [enable]="scannerEnabled"
+            (scanSuccess)="scanSuccessHandler($event)"
+            (scanError)="scanErrorHandler($event)"
+          ></zxing-scanner>
+        </div>
+      </div>
+    </div>
+    <div class="row mt-3">
+      <div class="col">
+        <button type="submit" [disabled]="!form.valid" class="btn btn-primary">Submit</button>
+      </div>
+    </div>
+  </form>
+
+</div>

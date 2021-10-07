@@ -1,0 +1,135 @@
+<div class="container-fluid py-3">
+  <ng-container *ngIf="!currentStep">
+    <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+      Click on the button below to start a new setup and associate pools with a rack. The complete process will only get saved to the database at the very end!
+    </ngb-alert>
+
+    <button class="btn btn-primary mt-3" (click)="currentStep = 'identify-rack'">Start</button>
+  </ng-container>
+
+
+
+
+  <ng-container *ngIf="currentStep === 'identify-rack'">
+    <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+      Provide the identifier of the rack.
+    </ngb-alert>
+
+    <div class="border rounded bg-light p-3">
+      <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="rack-input-mode" [(ngModel)]="rackInputMode">
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="manual"> Manual
+        </label>
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="camera"> Camera
+        </label>
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="scanner"> Scanner
+        </label>
+      </div>
+
+      <div *ngIf="rackInputMode === 'manual'">
+        <div class="form-group">
+          <label for="rack-id">Rack ID</label>
+          <input type="text" class="form-control" id="rack-id" placeholder="Rack ID" [(ngModel)]="rackId">
+        </div>
+        <button class="btn btn-primary mt-3" (click)="checkRack(rackId || '')" [disabled]="!rackId">Continue</button>
+      </div>
+
+      <div *ngIf="rackInputMode === 'camera'" style="width: 200px">
+        <zxing-scanner
+          (scanSuccess)="rackScanSuccessHandler($event)"
+          (scanError)="scanErrorHandler($event)"
+        ></zxing-scanner>
+      </div>
+
+      <div *ngIf="rackInputMode === 'scanner'">
+        <kbd>WIP</kbd>
+      </div>
+    </div>
+  </ng-container>
+
+
+
+
+  <ng-container *ngIf="currentStep === 'scan-pools'">
+    <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+      Start scanning the QR codes on the pools and put it at the indicated locations. You can select the camera or a hardware scanner. You must at least scan '1' and at most '{{ poolLimit }}' pools per rack ({{ rackId }}).
+    </ngb-alert>
+
+    <div class="border rounded bg-light p-3">
+      <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="pool-input-mode" [(ngModel)]="poolInputMode">
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="manual"> Manual
+        </label>
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="camera"> Camera
+        </label>
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="scanner"> Scanner
+        </label>
+      </div>
+
+      <div *ngIf="poolInputMode === 'manual'">
+        <div class="form-group">
+          <label for="next-pool-id">Next Pool ID</label>
+          <input type="text" class="form-control" id="next-p-id" placeholder="Next Pool ID" [(ngModel)]="nextPoolId" (keyup.enter)="manualNextPoolId(nextPoolId)">
+          <button class="btn btn-outline-primary mt-3" (click)="manualNextPoolId(nextPoolId)" [disabled]="!nextPoolId">Confirm</button>
+        </div>
+      </div>
+
+      <div *ngIf="poolInputMode === 'camera'" style="width: 200px">
+        <zxing-scanner
+          (scanSuccess)="poolScanSuccessHandler($event)"
+          (scanError)="scanErrorHandler($event)"
+        ></zxing-scanner>
+      </div>
+
+      <div *ngIf="poolInputMode === 'scanner'">
+        <kbd>WIP</kbd>
+      </div>
+    </div>
+
+    <button class="btn btn-primary mt-3" (click)="currentStep = 'done'" [disabled]="addedPools.length === 0">Done</button>
+  </ng-container>
+
+  <ng-container *ngIf="currentStep === 'done'">
+    <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+      By confirm with the button below, this rack and the pools get registered in the database and are ready for the next step.
+    </ngb-alert>
+
+    <button class="btn btn-primary mt-3" (click)="upload()">Upload to database</button>
+
+  </ng-container>
+
+
+  <hr>
+
+  <div class="container">
+    <div *ngIf="rackId">
+      <span>Rack ID: </span><code>{{ rackId }}</code>
+    </div>
+    <table *ngIf="rackId" class="mt-2 p-2 border bg-light">
+      <tr>
+        <th class="pool axis m-1"></th>
+        <th *ngFor="let x of matrix.x" class="pool axis m-1">{{ x }}</th>
+      </tr>
+      <tr *ngFor="let y of matrix.y; index as iy">
+        <th class="pool axis m-1">{{ y }}</th>
+        <td *ngFor="let x of matrix.x; index as ix" class="pool m-1" [class.next]="indices.x === ix && indices.y === iy" [class.empty]="indices.y < iy || (indices.x <= ix && indices.y === iy)" [class.blocked]="iy === matrix.y.length - 1 && ix === matrix.x.length - 1">
+
+        </td>
+      </tr>
+    </table>
+    <div *ngIf="addedPools.length > 0" class="mt-2">
+      <div class="text-muted">Added Pools</div>
+      <ul class="list-group">
+        <li *ngFor="let el of addedPools.reverse()" class="list-group-item d-flex align-items-center px-1 py-0 small">
+          <span>{{ el.pool.pool_id }}</span>
+          <span class="flex-grow-1"></span>
+          <code>{{ el.coordinate }}</code>
+        </li>
+      </ul>
+    </div>
+  </div>
+</div>

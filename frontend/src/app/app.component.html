@@ -1,0 +1,11 @@
+<div class="container-fluid d-flex p-2 bg-light border-bottom align-items-center">
+  <a routerLink="/" class="text-decoration-none"><h4 class="m-0">Covid Lab Testing Platform</h4></a>
+  <div class="flex-grow-1"></div>
+  <div *ngIf="credentials">
+    <span class="text-muted">User</span>
+    <span class="text-primary fw-bold ms-2">{{ credentials.username }}</span>
+  </div>
+</div>
+<core-system-popups></core-system-popups>
+<router-outlet></router-outlet>
+<div class="scan-success-indicator d-block position-fixed" [class.flash]="flash"></div>

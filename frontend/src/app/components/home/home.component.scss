@@ -1,0 +1,12 @@
+@import "node_modules/bootstrap/scss/bootstrap";
+
+.card
+{
+  cursor: pointer;
+
+  &:hover
+  {
+    background-color: $gray-200;
+    border-color: $gray-600;
+  }
+}

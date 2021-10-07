@@ -1,0 +1,13 @@
+<p class="p-4">
+  <ngb-alert
+    type="info"
+    [dismissible]="false"
+    i18n="page-not-found|Page not found message@@page-not-found.page-not-found"
+  >
+    <strong>404 Not Found!</strong> This page does not seem to exist. Go to
+    <a routerLink="/home" class="text-decoration-none"
+      ><span class="icon-home mx-1"></span>Home</a
+    >.<br />
+    <code>{{ url }}</code>
+  </ngb-alert>
+</p>

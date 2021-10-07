@@ -1,0 +1,15 @@
+.scan-success-indicator
+{
+  pointer-events: none;
+  top: 0px;
+  left: 0px;
+  right: 0px;
+  bottom: 0px;
+
+  background-color: transparent;
+
+  &.flash
+  {
+    background-color: rgba(green, 0.5);
+  }
+}

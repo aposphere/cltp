@@ -1,0 +1,17 @@
+.interpretation
+{
+  &.negative
+  {
+    background-color: green !important;
+  }
+
+  &.positive
+  {
+    background-color: red !important;
+  }
+
+  &.undetermined
+  {
+    background-color: yellow !important;
+  }
+}

@@ -1,0 +1,60 @@
+<div class="container">
+  <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+    Upload Probe Order JSON files
+  </ngb-alert>
+
+  <ul ngbNav #nav="ngbNav" [(activeId)]="active" [destroyOnHide]="false" class="nav-tabs">
+    <li [ngbNavItem]="1">
+      <a ngbNavLink>Batch File Upload</a>
+      <ng-template ngbNavContent>
+        <label for="upload-probe-order-files">Upload Files</label>
+        <input type="file" class="form-control" id="upload-probe-order-files" placeholder="orders.json" (change)="filesChanged($event)" multiple>
+        <button type="button" class="btn btn-primary mt-1" (click)="parseFiles()" [disabled]="!files">Load</button>
+
+        <div class="mt-2" *ngIf="uploadedOrders.length > 0">
+          <ul class="list-group">
+            <li *ngFor="let order of uploadedOrders" class="list-group-item d-flex align-items-center">
+              <span>{{ order.unternehmen_name || order.unternehmen_key }}</span>
+              <code class="ms-2">{{ order.barcode_nummer }}</code>
+              <span class="flex-grow-1"></span>
+              <span class="text-muted small">{{ order.comment }}</span>
+            </li>
+          </ul>
+          <button type="button" class="btn btn-primary mt-1" (click)="uploadOrders()">Upload to Database</button>
+          <button type="button" class="btn btn-outline-danger mt-1 ms-2" (click)="uploadedOrders = []">Cancel</button>
+        </div>
+        </ng-template>
+    </li>
+    <li [ngbNavItem]="2">
+      <a ngbNavLink>Manual Upload</a>
+      <ng-template ngbNavContent>
+        <form [formGroup]="form" (ngSubmit)="onSubmit()">
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="anonymous-pool-data">Data (JSON)</label>
+                <textarea rows="4" class="form-control" id="anonymous-pool-data" placeholder="Paste your json data here …" formControlName="data"></textarea>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col">
+              <div class="form-group">
+                <label for="probe-order-comment">Comment (Optional)</label>
+                <input type="text" class="form-control" id="probe-order-comment" placeholder="Comment" formControlName="comment">
+              </div>
+            </div>
+          </div>
+          <div class="row mt-3">
+            <div class="col">
+              <button type="submit" [disabled]="!form.valid" class="btn btn-primary">Submit</button>
+            </div>
+          </div>
+        </form>
+      </ng-template>
+    </li>
+  </ul>
+
+  <div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+</div>

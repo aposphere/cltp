@@ -1,0 +1,32 @@
+.rack
+{
+  display: inline-block;
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+  text-align: center;
+  vertical-align: middle;
+
+  background-color: blue;
+
+  &.axis
+  {
+    background-color: transparent;
+  }
+
+  &.empty
+  {
+    background-color: lightgray;
+  }
+
+  &.next
+  {
+    background-color: lightblue;
+  }
+
+  &.blocked
+  {
+    background-color: red;
+  }
+
+}

@@ -1,0 +1,103 @@
+<div class="container">
+  <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+    Upload test results and verify interpretations.
+  </ngb-alert>
+
+  <ng-container *ngIf="!resultData">
+    <div class="form-group">
+      <label for="upload-results-pcr-plate-id">PCR Plate ID</label>
+      <input type="text" class="form-control" id="upload-results-pcr-plate-id" placeholder="PCR Plate ID (Read QR-Code with Camera or Scanner)" [(ngModel)]="pcrPlateId">
+      <div class="py-1">
+        <button type="button" class="btn btn-sm btn-primary" [class.active]="scannerEnabled" (click)="scannerEnabled = !scannerEnabled">
+          <span *ngIf="!scannerEnabled">Start Camera</span>
+          <span *ngIf="scannerEnabled">Stop Camera</span>
+        </button>
+      </div>
+    </div>
+    <div *ngIf="scannerEnabled" class="row">
+      <div class="col-2">
+        <div class="border rounded">
+          <zxing-scanner
+            [enable]="scannerEnabled"
+            (scanSuccess)="scanSuccessHandler($event)"
+            (scanError)="scanErrorHandler($event)"
+          ></zxing-scanner>
+        </div>
+      </div>
+    </div>
+
+    <div *ngIf="pcrPlateId">
+      <label for="upload-results-file">Upload File</label>
+      <input type="file" class="form-control" id="upload-results-file" placeholder="PCR Export.csv" (change)="fileChanged($event)">
+      <button type="button" class="btn btn-primary mt-1" (click)="parseFile()" [disabled]="!file">Load</button>
+    </div>
+  </ng-container>
+
+  <div *ngIf="resultData" class="p-2 border rounded bg-light">
+    <table class="table">
+      <tbody>
+        <tr>
+          <td>Results Found in CSV</td>
+          <td>{{ resultData.resultEntries.length }}</td>
+        </tr>
+        <tr>
+          <td>Pos Control (n1n2)</td>
+          <td>{{ resultData.posControl }}</td>
+        </tr>
+        <tr>
+          <td>Neg Control (n1n2)</td>
+          <td>{{ resultData.negControl }}</td>
+        </tr>
+        <tr>
+          <td>Pools Tested (database)</td>
+          <td>{{ resultData.entriesTested }}</td>
+        </tr>
+        <tr>
+          <td>Pos</td>
+          <td>{{ resultData.entriesPos }}</td>
+        </tr>
+        <tr>
+          <td>Neg</td>
+          <td>{{ resultData.entriesNeg }}</td>
+        </tr>
+        <tr>
+          <td>Undetermined</td>
+          <td>{{ resultData.entriesUn }}</td>
+        </tr>
+        <tr>
+          <td>Pools without results (should be zero!)</td>
+          <td>{{ resultData.noResults.length }}</td>
+        </tr>
+        </tbody>
+    </table>
+
+    <button type="button" class="btn btn-primary mt-1" (click)="uploadResults()">Upload to Database</button>
+    <button type="button" class="btn btn-outline-danger mt-1 ms-2" (click)="resultData = undefined">Cancel</button>
+
+    <hr>
+
+    <div class="text-muted">Interpretation</div>
+    <table class="bg-light">
+      <tbody>
+        <tr>
+          <th></th>
+          <th *ngFor="let _ of [].constructor(N); index as i">{{ i + 1 }}</th>
+        </tr>
+        <tr *ngFor="let _ of [].constructor(M); index as j">
+          <th>{{ ALPHABET[j] }}</th>
+          <td *ngFor="let _ of [].constructor(N); index as i" class="ps-1 pt-1">
+            <div
+              class="badge bg-light text-dark interpretation w-100 h-100"
+              [class.negative]="resultData.map[j][i]?.interpretation === 'negative'"
+              [class.positive]="resultData.map[j][i]?.interpretation === 'positive'"
+              [class.undetermined]="resultData.map[j][i]?.interpretation === 'undetermined'"
+              [title]="resultData.map[j][i]?.pool_id"
+            >{{ ALPHABET[j] }}{{ i + 1 }}</div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+
+</div>

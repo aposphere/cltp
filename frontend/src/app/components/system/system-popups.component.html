@@ -1,0 +1,37 @@
+<ng-template #connectionPopup let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">
+      <span
+        >Connect
+      </span>
+    </h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Provide the credentials to connect to the database.
+    </p>
+    <div class="form-floating mb-3">
+      <input type="email" class="form-control" id="username" placeholder="username" [(ngModel)]="username">
+      <label for="username">Username</label>
+    </div>
+    <div class="form-floating">
+      <input type="password" class="form-control" id="password" placeholder="Password" [(ngModel)]="password">
+      <label for="password">Password</label>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button
+      type="button"
+      class="btn btn-primary"
+      (click)="modal.close('Delete click')"
+    >
+      <span>Connection</span>
+    </button>
+  </div>
+</ng-template>
