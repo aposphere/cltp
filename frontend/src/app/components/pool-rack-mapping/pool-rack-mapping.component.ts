@@ -1,6 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { Plate } from 'src/app/interfaces/plate';
 import { Pool } from 'src/app/interfaces/pool';
@@ -40,11 +40,9 @@ export class PoolRackMappingComponent implements OnDestroy
 
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
-  rackInputMode: "manual" | "camera" | "scanner" = "manual"
+  rackInputMode: "manual" | "camera" | "scanner" = "scanner"
 
-  poolInputMode: "manual" | "camera" | "scanner" = "manual"
-
-  scannerEnabled = false
+  poolInputMode: "manual" | "camera" | "scanner" = "scanner"
 
   rackId?: string
   rackI?: number
@@ -64,6 +62,13 @@ export class PoolRackMappingComponent implements OnDestroy
   )
   {
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-rack' && this.rackInputMode === 'scanner')).subscribe(async (input) =>
+    {
+      this.stateService.scanSucess.next()
+      await this.checkRack(input)
+      if (this.poolInputMode !== 'scanner') this.stateService.scannerInputEnable.next(false)
+    })
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-pools' && this.poolInputMode === 'scanner')).subscribe(async (input) => this.poolScanSuccessHandler(input))
   }
 
   reset(): void
@@ -76,6 +81,17 @@ export class PoolRackMappingComponent implements OnDestroy
     this.addedPools = []
   }
 
+  start(): void
+  {
+    this.currentStep = 'identify-rack'
+    if (this.rackInputMode === 'scanner') this.stateService.scannerInputEnable.next(true)
+  }
+
+  changeInputMode(ev: Event)
+  {
+    this.stateService.scannerInputEnable.next((ev.target as HTMLInputElement).value === 'scanner')
+  }
+
   async rackScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
@@ -86,7 +102,7 @@ export class PoolRackMappingComponent implements OnDestroy
     // Valid scan
     else
     {
-      this.checkRack(ev)
+      await this.checkRack(ev)
     }
   }
 
@@ -239,7 +255,7 @@ export class PoolRackMappingComponent implements OnDestroy
       // Last one (excluding one empty)
       if (this.indices.x === this.matrix.x.length - 2 && this.indices.y === this.matrix.y.length - 1)
       {
-        this.currentStep = 'done'
+        this.done()
       }
       // Wrap line
       if (this.indices.x === this.matrix.x.length - 1)
@@ -249,6 +265,12 @@ export class PoolRackMappingComponent implements OnDestroy
       }
       else this.indices.x++
     }
+  }
+
+  done(): void
+  {
+    this.currentStep = 'done'
+    if (this.poolInputMode === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
 

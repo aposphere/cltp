@@ -1,3 +1,5 @@
+@import "node_modules/bootstrap/scss/bootstrap";
+
 .scan-success-indicator
 {
   pointer-events: none;
@@ -11,5 +13,18 @@
   &.flash
   {
     background-color: rgba(green, 0.5);
+  }
+}
+
+.menu
+{
+  &:hover
+  {
+    background-color: $gray-200 !important;
+
+    svg
+    {
+      fill: $primary;
+    }
   }
 }

@@ -9,4 +9,14 @@
     background-color: $gray-200;
     border-color: $gray-600;
   }
+
+  .card-img-top
+  {
+    max-height: 120px;
+
+    &.cover
+    {
+      object-fit: cover;
+    }
+  }
 }

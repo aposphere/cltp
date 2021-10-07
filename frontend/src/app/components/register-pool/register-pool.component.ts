@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { Pool } from 'src/app/interfaces/pool';
 import { PoolArrival } from 'src/app/interfaces/pool-arrival';
@@ -21,6 +21,7 @@ export class RegisterPoolComponent implements OnDestroy
 {
   credentials?: Credentials;
 
+  cameraEnabled = false;
   scannerEnabled = false;
 
   form = new FormGroup(
@@ -40,13 +41,20 @@ export class RegisterPoolComponent implements OnDestroy
   )
   {
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.scannerEnabled)).subscribe((input) =>
+    {
+      this.stateService.scanSucess.next()
+      this.form.patchValue({ poolId: input })
+      this.scannerEnabled = false
+      this.stateService.scannerInputEnable.next(false)
+    });
   }
 
   scanSuccessHandler(ev: string): void
   {
     this.stateService.scanSucess.next()
     this.form.patchValue({ poolId: ev.trim() })
-    this.scannerEnabled = false
+    this.cameraEnabled = false
   }
 
   scanErrorHandler(ev: unknown): void

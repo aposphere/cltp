@@ -6,6 +6,7 @@ import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
 import { v4 } from 'uuid';
 import { ToastsService } from 'src/app/services/toasts.service';
+import { filter, takeUntil } from 'rxjs/operators';
 
 const steps = ["identify-pcr-plate", "scan-plates", "done"] as const
 type Step = typeof steps[number];
@@ -30,9 +31,9 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
-  pcrPlateInputMode: "manual" | "camera" | "scanner" = "manual"
+  pcrPlateInputMode: "manual" | "camera" | "scanner" = "scanner"
 
-  plateInputMode: "manual" | "camera" | "scanner" = "manual"
+  plateInputMode: "manual" | "camera" | "scanner" = "scanner"
 
   scannerEnabled = false
 
@@ -51,6 +52,13 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     public toastsService: ToastsService
   )
   {
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pcr-plate' &&  this.pcrPlateInputMode === 'scanner')).subscribe(async (input) =>
+    {
+      this.stateService.scanSucess.next()
+      await this.checkPcrPlate(input)
+      if (this.plateInputMode !== 'scanner') this.stateService.scannerInputEnable.next(false)
+    })
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-plates' && this.plateInputMode === 'scanner')).subscribe(async (input) => this.plateScanSuccessHandler(input))
   }
 
   reset(): void
@@ -60,6 +68,17 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     this.nextPlateId = undefined
     this.indices = { x: 0, y: 0 }
     this.addedPlates = []
+  }
+
+  start(): void
+  {
+    this.currentStep = 'identify-pcr-plate'
+    if (this.pcrPlateInputMode === 'scanner') this.stateService.scannerInputEnable.next(true)
+  }
+
+  changeInputMode(ev: Event)
+  {
+    this.stateService.scannerInputEnable.next((ev.target as HTMLInputElement).value === 'scanner')
   }
 
   async pcrPlateScanSuccessHandler(ev: string): Promise<void>
@@ -72,7 +91,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     // Valid scan
     else
     {
-      this.checkPcrPlate(ev)
+      await this.checkPcrPlate(ev)
     }
   }
 
@@ -197,7 +216,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       // Last one
       if (this.indices.x === this.matrix.x.length - 1 && this.indices.y === this.matrix.y.length - 1)
       {
-        this.currentStep = 'done'
+        this.done()
       }
       // Wrap line
       if (this.indices.x === this.matrix.x.length - 1)
@@ -209,6 +228,11 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     }
   }
 
+  done(): void
+  {
+    this.currentStep = 'done'
+    if (this.plateInputMode === 'scanner') this.stateService.scannerInputEnable.next(false)
+  }
 
   async upload(): Promise<void>
   {

@@ -4,7 +4,8 @@
       Click on the button below to start a new setup and associate pools with a rack. The complete process will only get saved to the database at the very end!
     </ngb-alert>
 
-    <button class="btn btn-primary mt-3" (click)="currentStep = 'identify-rack'">Start</button>
+    <button class="btn btn-primary mt-3" (click)="start()">Start</button>
+    <button class="btn btn-outline-secondary mt-3 ms-2" routerLink="/">Home</button>
   </ng-container>
 
 
@@ -16,15 +17,15 @@
     </ngb-alert>
 
     <div class="border rounded bg-light p-3">
-      <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="rack-input-mode" [(ngModel)]="rackInputMode">
-        <label ngbButtonLabel class="btn-primary">
-          <input ngbButton type="radio" value="manual"> Manual
-        </label>
+      <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="rack-input-mode" [(ngModel)]="rackInputMode" (change)="changeInputMode($event)">
         <label ngbButtonLabel class="btn-primary">
           <input ngbButton type="radio" value="camera"> Camera
         </label>
         <label ngbButtonLabel class="btn-primary">
           <input ngbButton type="radio" value="scanner"> Scanner
+        </label>
+        <label ngbButtonLabel class="btn-primary">
+          <input ngbButton type="radio" value="manual"> Manual
         </label>
       </div>
 
@@ -44,7 +45,7 @@
       </div>
 
       <div *ngIf="rackInputMode === 'scanner'">
-        <kbd>WIP</kbd>
+        <span class="text-muted">Please scan the QR Code …</span>
       </div>
     </div>
   </ng-container>
@@ -59,15 +60,15 @@
 
     <div class="border rounded bg-light p-3">
       <div class="d-flex align-items-center">
-        <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="pool-input-mode" [(ngModel)]="poolInputMode">
-          <label ngbButtonLabel class="btn-primary">
-            <input ngbButton type="radio" value="manual"> Manual
-          </label>
+        <div class="btn-group btn-group-toggle mb-3" ngbRadioGroup name="pool-input-mode" [(ngModel)]="poolInputMode" (change)="changeInputMode($event)">
           <label ngbButtonLabel class="btn-primary">
             <input ngbButton type="radio" value="camera"> Camera
           </label>
           <label ngbButtonLabel class="btn-primary">
             <input ngbButton type="radio" value="scanner"> Scanner
+          </label>
+          <label ngbButtonLabel class="btn-primary">
+            <input ngbButton type="radio" value="manual"> Manual
           </label>
         </div>
 
@@ -81,7 +82,7 @@
       <div *ngIf="poolInputMode === 'manual'">
         <div class="form-group">
           <label for="next-pool-id">Next Pool ID</label>
-          <input type="text" class="form-control" id="next-p-id" placeholder="Next Pool ID" [(ngModel)]="nextPoolId" (keyup.enter)="manualNextPoolId(nextPoolId)">
+          <input type="text" class="form-control" id="next-p-id" placeholder="Next Pool ID" [(ngModel)]="nextPoolId">
           <button class="btn btn-outline-primary mt-3" (click)="manualNextPoolId(nextPoolId)" [disabled]="!nextPoolId">Confirm</button>
         </div>
       </div>
@@ -94,11 +95,11 @@
       </div>
 
       <div *ngIf="poolInputMode === 'scanner'">
-        <kbd>WIP</kbd>
+        <span class="text-muted">Please scan the QR Code …</span>
       </div>
     </div>
 
-    <button class="btn btn-primary mt-3" (click)="currentStep = 'done'" [disabled]="addedPools.length === 0">Done</button>
+    <button class="btn btn-primary mt-3" (click)="done()" [disabled]="addedPools.length === 0">Done</button>
   </ng-container>
 
   <ng-container *ngIf="currentStep === 'done'">

@@ -1,7 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
-import { takeUntil } from 'rxjs/operators';
+import { filter, takeUntil } from 'rxjs/operators';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { Interpretation } from 'src/app/interfaces/interpretation';
 import { MappingView } from 'src/app/interfaces/mapping-view';
@@ -58,7 +58,8 @@ export class UploadResultsComponent implements OnDestroy
   M = M
   ALPHABET = ALPHABET
 
-  scannerEnabled = false
+  cameraEnabled = false
+  scannerEnabled = false;
 
   pcrPlateId?: string
 
@@ -74,13 +75,20 @@ export class UploadResultsComponent implements OnDestroy
     public toastsService: ToastsService
   )
   {
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.scannerEnabled)).subscribe((input) =>
+    {
+      this.stateService.scanSucess.next()
+      this.pcrPlateId = input
+      this.scannerEnabled = false
+      this.stateService.scannerInputEnable.next(false)
+    });
   }
 
   scanSuccessHandler(ev: string): void
   {
     this.stateService.scanSucess.next()
     this.pcrPlateId = ev
-    this.scannerEnabled = false
+    this.cameraEnabled = false
   }
 
   scanErrorHandler(ev: unknown): void

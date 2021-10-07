@@ -1,5 +1,6 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
+import { filter, takeUntil } from 'rxjs/operators';
 import { Plate } from 'src/app/interfaces/plate';
 import { Rack } from 'src/app/interfaces/rack';
 import { DBService } from 'src/app/services/db.service';
@@ -30,9 +31,9 @@ export class RackPlateMappingComponent implements OnDestroy
 
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
-  plateInputMode: "manual" | "camera" | "scanner" = "manual"
+  plateInputMode: "manual" | "camera" | "scanner" = "scanner"
 
-  rackInputMode: "manual" | "camera" | "scanner" = "manual"
+  rackInputMode: "manual" | "camera" | "scanner" = "scanner"
 
   scannerEnabled = false
 
@@ -51,6 +52,13 @@ export class RackPlateMappingComponent implements OnDestroy
     public toastsService: ToastsService
   )
   {
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-plate' &&  this.plateInputMode === 'scanner')).subscribe(async (input) =>
+    {
+      this.stateService.scanSucess.next()
+      await this.checkPlate(input)
+      if (this.rackInputMode !== 'scanner') this.stateService.scannerInputEnable.next(false)
+    })
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-racks' && this.rackInputMode === 'scanner')).subscribe(async (input) => this.rackScanSuccessHandler(input))
   }
 
   reset(): void
@@ -60,6 +68,17 @@ export class RackPlateMappingComponent implements OnDestroy
     this.nextRackId = undefined
     this.indices = { x: 0, y: 0 }
     this.addedRacks = []
+  }
+
+  start(): void
+  {
+    this.currentStep = 'identify-plate'
+    if (this.plateInputMode === 'scanner') this.stateService.scannerInputEnable.next(true)
+  }
+
+  changeInputMode(ev: Event)
+  {
+    this.stateService.scannerInputEnable.next((ev.target as HTMLInputElement).value === 'scanner')
   }
 
   async plateScanSuccessHandler(ev: string): Promise<void>
@@ -72,7 +91,7 @@ export class RackPlateMappingComponent implements OnDestroy
     // Valid scan
     else
     {
-      this.checkPlate(ev)
+      await this.checkPlate(ev)
     }
   }
 
@@ -216,7 +235,7 @@ export class RackPlateMappingComponent implements OnDestroy
       // Last one
       if (this.indices.x === this.matrix.x.length - 1 && this.indices.y === this.matrix.y.length - 1)
       {
-        this.currentStep = 'done'
+        this.done()
       }
       // Wrap line
       if (this.indices.x === this.matrix.x.length - 1)
@@ -226,6 +245,12 @@ export class RackPlateMappingComponent implements OnDestroy
       }
       else this.indices.x++
     }
+  }
+
+  done(): void
+  {
+    this.currentStep = 'done'
+    if (this.rackInputMode === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
 

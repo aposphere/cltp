@@ -8,11 +8,15 @@
       <div class="col">
         <div class="form-group">
           <label for="register-pool-pool-id">Pool ID</label>
-          <input type="text" class="form-control" id="register-pool-pool-id" placeholder="Pool ID (Read QR-Code with Camera or Scanner)" formControlName="poolId">
+          <input type="text" class="form-control" id="register-pool-pool-id" placeholder="Pool ID (Read QR-Code with Camera or Scanner)" formControlName="poolId" [readonly]="cameraEnabled || scannerEnabled">
           <div class="py-1">
-            <button type="button" class="btn btn-sm btn-primary" [class.active]="scannerEnabled" (click)="scannerEnabled = !scannerEnabled">
-              <span *ngIf="!scannerEnabled">Start Camera</span>
-              <span *ngIf="scannerEnabled">Stop Camera</span>
+            <button type="button" class="btn btn-sm btn-primary" [class.btn-warning]="scannerEnabled" (click)="scannerEnabled = !scannerEnabled" (click)="stateService.scannerInputEnable.next(scannerEnabled)">
+              <span *ngIf="!scannerEnabled">Start Scanner</span>
+              <span *ngIf="scannerEnabled">Stop Scanner</span>
+            </button>
+            <button type="button" class="btn btn-sm btn-primary ms-1" [class.btn-warning]="cameraEnabled" (click)="cameraEnabled = !cameraEnabled">
+              <span *ngIf="!cameraEnabled">Start Camera</span>
+              <span *ngIf="cameraEnabled">Stop Camera</span>
             </button>
           </div>
         </div>
@@ -30,11 +34,11 @@
         </div>
       </div>
     </div>
-    <div *ngIf="scannerEnabled" class="row">
+    <div *ngIf="cameraEnabled" class="row">
       <div class="col-2">
         <div class="border rounded">
           <zxing-scanner
-            [enable]="scannerEnabled"
+            [enable]="cameraEnabled"
             (scanSuccess)="scanSuccessHandler($event)"
             (scanError)="scanErrorHandler($event)"
           ></zxing-scanner>
