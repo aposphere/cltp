@@ -30,7 +30,7 @@ jobs:
     - name: Push to GitHub Packages
       uses: docker/build-push-action@v2
       with:
-        file: backend/Dockerfile
+        context: backend
         push: true
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
@@ -58,7 +58,7 @@ jobs:
     - name: Push to GitHub Packages
       uses: docker/build-push-action@v2
       with:
-        file: frontend/Dockerfile
+        context: frontend
         push: true
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
