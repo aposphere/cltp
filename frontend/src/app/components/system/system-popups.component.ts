@@ -4,6 +4,9 @@ import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
 import { takeUntil, take } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
+import { StateService } from 'src/app/services/state.service';
+import { DBService } from 'src/app/services/db.service';
+
 
 @Component({
   selector: 'core-system-popups',
@@ -15,14 +18,20 @@ export class SystemPopupsComponent implements OnDestroy, OnInit
   username?: string;
   password?: string;
 
+  staffId?: string;
+  sampleId?: string;
+
   credentials?: Credentials;
 
   @ViewChild('connectionPopup') connectionPopup?: TemplateRef<HTMLElement>;
+  @ViewChild('uploadPersonalSamplePopup') uploadPersonalSamplePopup?: TemplateRef<HTMLElement>;
 
   unsubscribe$ = new Subject<void>();
 
   constructor(
+    public dbService: DBService,
     public modalService: NgbModal,
+    public stateService: StateService,
     public configService: ConfigService
   )
   {
@@ -38,29 +47,84 @@ export class SystemPopupsComponent implements OnDestroy, OnInit
   /**
    * Show connection popup
    */
-  async showConnectionPopup(): Promise<void>
-  {
-    this.password = undefined;
+   async showConnectionPopup(): Promise<void>
+   {
+     this.password = undefined;
 
-    const modal = this.modalService.open(this.connectionPopup, { size: 'md' });
+     const modal = this.modalService.open(this.connectionPopup, { size: 'md' });
+
+     try
+     {
+       await modal.result; // Fails on modal dismiss
+
+       if (!this.username) throw new Error("ID is undefined");
+       if (!this.password) throw new Error("Password is undefined");
+
+       await this.configService.connectToDB(this.username, this.password);
+     }
+     catch (e)
+     {
+       if (!this.credentials) this.showConnectionPopup(); // Repeat, trap the user in this loop
+       else alert("Could not connect with provided credentials, reverting to previous!")
+     }
+   }
+
+
+  /**
+   * Show upload personal sample popup
+   */
+  async showUploadPersonalSamplePopup(): Promise<void>
+  {
+    const modal = this.modalService.open(this.uploadPersonalSamplePopup, { size: 'fullscreen' });
 
     try
     {
       await modal.result; // Fails on modal dismiss
 
-      if (!this.username) throw new Error("ID is undefined");
-      if (!this.password) throw new Error("Password is undefined");
+      if (!this.staffId) throw new Error("Staff is undefined");
+      if (!this.sampleId) throw new Error("Sample is undefined");
 
-      await this.configService.connectToDB(this.username, this.password);
+      console.log(this.staffId, this.sampleId)
+
+      const q = `INSERT INTO sample (sample_id, staff_id) VALUES ('${this.sampleId}','${this.staffId}');`
+
+      try
+      {
+        await this.dbService.anonymousQuery(q)
+
+        alert("Registration completed, thank you for your contribution!")
+      }
+      catch (e)
+      {
+        alert("Registration Failed! You have to be registered as staff in the database and each sample can only be registered once!")
+        console.error(e)
+      }
+
+      this.staffId = undefined
+      this.sampleId = undefined
     }
     catch (e)
     {
-      if (!this.credentials) this.showConnectionPopup(); // Repeat, trap the user in this loop
-      else alert("Could not connect with provided credentials, reverting to previous!")
+      console.error(e)
     }
   }
 
-  ngOnDestroy(): void
+  scanSuccessHandler(ev: string): void
+  {
+    this.stateService.scanSucess.next()
+
+    if (!this.staffId) this.staffId = ev
+    else if (this.staffId !== ev) this.sampleId = ev
+    else alert("Please do not scan the same code again.")
+  }
+
+  scanErrorHandler(ev: unknown): void
+  {
+    console.error("SCAN ERROR")
+    console.error(ev)
+  }
+
+   ngOnDestroy(): void
   {
     // Clean up all subscriptions
     this.unsubscribe$.next();

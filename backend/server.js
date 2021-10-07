@@ -48,7 +48,7 @@ app.post("/**", async (req, response, next) =>
 
   try
   {
-    if (!STORE.has(username))
+    if (!STORE.has(username + password))
     {
       const pool = new Pool(
       {
@@ -58,13 +58,13 @@ app.post("/**", async (req, response, next) =>
         password: password,
         port: dbPort
       })
-      STORE.set(username, pool)
+      STORE.set(username + password, pool)
     }
 
     let client
     try
     {
-      client = await STORE.get(username).connect()
+      client = await STORE.get(username + password).connect()
 
       await client.query("START TRANSACTION")
 

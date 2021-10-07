@@ -35,8 +35,6 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
   plateInputMode: "manual" | "camera" | "scanner" = "scanner"
 
-  scannerEnabled = false
-
   pcrPlateId?: string
 
   nextPlateId?: string

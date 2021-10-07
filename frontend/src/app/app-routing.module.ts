@@ -4,10 +4,12 @@ import { HomeComponent } from './components/home/home.component';
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 import { UploadProbeOrdersComponent } from './components/upload-probe-orders/upload-probe-orders.component';
 import { RegisterPoolComponent } from './components/register-pool/register-pool.component';
+import { PoolingComponent } from './components/pooling/pooling.component';
 import { PoolRackMappingComponent } from './components/pool-rack-mapping/pool-rack-mapping.component';
 import { RackPlateMappingComponent } from './components/rack-plate-mapping/rack-plate-mapping.component';
 import { PlatePcrPlateMappingComponent } from './components/plate-pcr-plate-mapping/plate-pcr-plate-mapping.component';
 import { UploadResultsComponent } from './components/upload-results/upload-results.component';
+import { DownloadProbeResultsComponent } from './components/download-probe-results/download-probe-results.component';
 
 const routes: Routes =
 [
@@ -25,6 +27,10 @@ const routes: Routes =
     component: RegisterPoolComponent
   },
   {
+    path: 'pooling',
+    component: PoolingComponent
+  },
+  {
     path: 'pool-rack-mapping',
     component: PoolRackMappingComponent
   },
@@ -39,6 +45,10 @@ const routes: Routes =
   {
     path: 'upload-results',
     component: UploadResultsComponent
+  },
+  {
+    path: 'download-probe-results',
+    component: DownloadProbeResultsComponent
   },
   {
     path: '**',

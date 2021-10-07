@@ -13,10 +13,12 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 
 import { UploadProbeOrdersComponent } from './components/upload-probe-orders/upload-probe-orders.component';
 import { RegisterPoolComponent } from './components/register-pool/register-pool.component';
+import { PoolingComponent } from './components/pooling/pooling.component';
 import { PoolRackMappingComponent } from './components/pool-rack-mapping/pool-rack-mapping.component';
 import { RackPlateMappingComponent } from './components/rack-plate-mapping/rack-plate-mapping.component';
 import { PlatePcrPlateMappingComponent } from './components/plate-pcr-plate-mapping/plate-pcr-plate-mapping.component';
 import { UploadResultsComponent } from './components/upload-results/upload-results.component';
+import { DownloadProbeResultsComponent } from './components/download-probe-results/download-probe-results.component';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
@@ -34,10 +36,12 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
     PageNotFoundComponent,
     UploadProbeOrdersComponent,
     RegisterPoolComponent,
+    PoolingComponent,
     PoolRackMappingComponent,
     RackPlateMappingComponent,
     PlatePcrPlateMappingComponent,
-    UploadResultsComponent
+    UploadResultsComponent,
+    DownloadProbeResultsComponent
   ],
   imports: [
     BrowserModule,

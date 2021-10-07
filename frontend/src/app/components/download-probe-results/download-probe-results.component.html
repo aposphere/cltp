@@ -1,0 +1,35 @@
+<div class="container">
+  <ngb-alert [dismissible]="false" class="d-block mt-3" type="info">
+    Download Probe Order JSON files
+  </ngb-alert>
+
+  <ul ngbNav #nav="ngbNav" [(activeId)]="active" [destroyOnHide]="false" class="nav-tabs">
+    <li [ngbNavItem]="1" *ngIf="probeResults.length > 0">
+      <a ngbNavLink>Download Probe Results</a>
+      <ng-template ngbNavContent>
+        <button type="button" class="btn btn-primary mtb1" (click)="downloadProbeResults()">Download Probe Results</button>
+
+        <ul class="list-group">
+          <li *ngFor="let probeResult of probeResults" class="list-group-item">
+            {{ probeResult.label }}
+          </li>
+        </ul>
+      </ng-template>
+    </li>
+    <li [ngbNavItem]="2" *ngIf="internalProbeResults.length > 0">
+      <a ngbNavLink>Download Internal Probe Results</a>
+      <ng-template ngbNavContent>
+        <button type="button" class="btn btn-primary mb-1" (click)="downloadInternalProbeResults()">Download Internal Probe Results</button>
+
+        <ul class="list-group">
+          <li *ngFor="let probeResult of internalProbeResults" class="list-group-item">
+              {{ probeResult.label }}
+          </li>
+        </ul>
+      </ng-template>
+    </li>
+  </ul>
+
+  <div [ngbNavOutlet]="nav" class="mt-2"></div>
+
+</div>

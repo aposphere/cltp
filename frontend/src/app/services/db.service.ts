@@ -3,6 +3,12 @@ import { HttpClient } from '@angular/common/http';
 import { Credentials } from '../interfaces/credentials';
 import { environment } from 'src/environments/environment';
 
+const ANONYMOUS_CREDENTIALS: Credentials =
+{
+  username: "anonymous",
+  password: "anonymous"
+}
+
 @Injectable(
 {
   providedIn: 'root',
@@ -28,6 +34,17 @@ export class DBService
     {
       query: query,
       ...this.credentials
+    }).toPromise();
+  }
+
+  async anonymousQuery(query: string): Promise<unknown>
+  {
+    console.info("Run Anonymous Query: ", query)
+
+    return this.http.post(environment.backend,
+    {
+      query: query,
+      ...ANONYMOUS_CREDENTIALS
     }).toPromise();
   }
 }

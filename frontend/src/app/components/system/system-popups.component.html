@@ -2,7 +2,7 @@
   <div class="modal-header">
     <h4 class="modal-title">
       <span
-        >Connect
+        >Welcome
       </span>
     </h4>
     <button
@@ -13,8 +13,15 @@
     ></button>
   </div>
   <div class="modal-body">
+    <button class="btn btn-lg btn-outline-primary w-100" (click)="showUploadPersonalSamplePopup()">Upload Personal Sample</button>
+
+    <div class="d-flex align-items-center my-3">
+      <hr class="flex-grow-1 mx-3">
+      <div class="mx-3 text-muted fw-bold">or</div>
+      <hr class="flex-grow-1 mx-3">
+    </div>
     <p>
-      Provide the credentials to connect to the database.
+      Provide the credentials to access the database interface.
     </p>
     <div class="form-floating mb-3">
       <input type="email" class="form-control" id="username" placeholder="username" [(ngModel)]="username">
@@ -29,9 +36,58 @@
     <button
       type="button"
       class="btn btn-primary"
-      (click)="modal.close('Delete click')"
+      (click)="modal.close('Connect click')"
     >
       <span>Connection</span>
     </button>
+  </div>
+</ng-template>
+<ng-template #uploadPersonalSamplePopup let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">
+      <span
+        >Upload Personal Sample
+      </span>
+    </h4>
+    <button
+      type="button"
+      class="btn-close"
+      aria-label="Close"
+      (click)="modal.dismiss('Cross click')"
+    ></button>
+  </div>
+  <div class="modal-body">
+    <p>
+      Please scan both your badge and the sample.
+    </p>
+
+    <hr>
+
+    <div class="row">
+      <div *ngIf="!staffId" class="col">
+        <h4>1. Scan your badge</h4>
+        <div>
+          <zxing-scanner
+            style="max-width: 300px"
+          (scanSuccess)="scanSuccessHandler($event)"
+          (scanError)="scanErrorHandler($event)"
+          ></zxing-scanner>
+        </div>
+      </div>
+      <div *ngIf="staffId && !sampleId" class="col">
+        <h4>2. Scan your sample</h4>
+        <div>
+          <zxing-scanner
+            style="max-width: 300px"
+          (scanSuccess)="scanSuccessHandler($event)"
+          (scanError)="scanErrorHandler($event)"
+          ></zxing-scanner>
+        </div>
+      </div>
+      <div *ngIf="staffId && sampleId" class="col">
+        <h4>Thank you!</h4>
+        <button class="btn btn-lg btn-outline-primary w-100 mt-5" (click)="modal.close('Register click')">Register Personal Sample</button>
+      </div>
+    </div>
   </div>
 </ng-template>

@@ -7,6 +7,7 @@ import { DBService } from './db.service';
 
 
 
+
 @Injectable(
 {
   providedIn: 'root',
@@ -39,6 +40,7 @@ export class ConfigService
     catch (e)
     {
       console.error(e);
+      throw e;
     }
   }
 }
