@@ -1,19 +1,38 @@
 const express = require('express')
-const { Pool } = require('pg')
+const sql = require('mssql')
 const cors = require('cors')
 
 const app = express()
 
-const STORE = new Map()
-
-
 const endpoint = process.env.ENDPOINT || 'http://localhost'
 const port = process.env.PORT || '8080'
-const dbEndpoint = process.env.POSTGRES_ENDPOINT || 'http://testdb'
-const dbPort = process.env.POSTGRES_PORT || '5432'
-const dbDatabase = process.env.POSTGRES_DATABASE || 'test'
+const dbEndpoint = process.env.MSSQL_ENDPOINT || 'http://db'
+const dbPort = +process.env.MSSQL_PORT || 1433
+const dbDatabase = process.env.MSSQL_DATABASE || 'test0'
+const dbUsername = process.env.MSSQL_USERNAME || 'cltp'
+const dbPassword = process.env.MSSQL_PASSWORD || 'cltp-aposphere'
 const frontendEndpoint = process.env.FRONTEND_ENDPOINT || 'http://localhost'
 const frontendPort = process.env.FRONTEND_PORT || '4200'
+const servicePassword = process.env.SERVICE_PASSWORD || 'cltp'
+
+const pool = new sql.ConnectionPool(
+{
+  user: dbUsername,
+  server: dbEndpoint,
+  database: dbDatabase,
+  password: dbPassword,
+  port: dbPort,
+  options: 
+  {
+    trustServerCertificate: true // self-signed
+  }
+})
+let connected = false
+pool.on('error', e => 
+{
+  console.error(e)
+})
+
 
 // parse application/x-www-form-urlencoded
 app.use(express.urlencoded({ extended: false, limit: '50mb' }))
@@ -42,35 +61,36 @@ app.post("/**", async (req, response, next) =>
   const query = req.body.query
   const username = req.body.username
   const password = req.body.password
-  console.log(`RUN QUERY (${username}): ${query}`)
 
-  if (!query || !username || !password) return next(new Error("POST body is mal-formed"))
+  if (password !== servicePassword) return response.status(401).send("Service password invalid")
+
+  if (!connected)
+  {
+    console.log("CONNECTING TO DB …")
+    const poolConnect = pool.connect()
+    await poolConnect;
+    console.log("CONNECTED!")
+    connected = true
+  }
+
+  console.log(`RUN QUERY (${username}): ${query}`)
 
   try
   {
-    if (!STORE.has(username + password))
-    {
-      const pool = new Pool(
-      {
-        user: username,
-        host: dbEndpoint,
-        database: dbDatabase,
-        password: password,
-        port: dbPort
-      })
-      STORE.set(username + password, pool)
-    }
 
-    let client
+    let transaction
+    let request
     try
     {
-      client = await STORE.get(username + password).connect()
+      transaction = pool.transaction()
 
-      await client.query("START TRANSACTION")
+      await transaction.begin()
 
-      const res = await client.query(query)
+      request = transaction.request()
 
-      await client.query("COMMIT")
+      const res = await request.query(query)
+
+      await transaction.commit()
 
       response.json(res)
     }
@@ -79,7 +99,7 @@ app.post("/**", async (req, response, next) =>
       try 
       { 
         console.log(`ROLLING BACK QUERY (${username}): ${query}`)
-        client.query('ROLLBACK');
+        transaction.rollback();
         return next(e)
       } 
       catch (e) 
@@ -87,10 +107,6 @@ app.post("/**", async (req, response, next) =>
         console.error("Error while rolling back")
         throw e
       }
-    }
-    finally
-    {
-      if (client) client.release()
     }
   }
   catch (e)

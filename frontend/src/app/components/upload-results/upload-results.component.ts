@@ -115,9 +115,9 @@ export class UploadResultsComponent implements OnDestroy
     try
     {
       // Get plate to verify
-      const res = await this.dbService.query(`SELECT pcr_plate_id FROM pcr_plate WHERE pcr_plate_id = '${this.pcrPlateId}' LIMIT 1`)
+      const res = await this.dbService.query(`SELECT pcr_plate_id FROM cltp.pcr_plate WHERE pcr_plate_id = '${this.pcrPlateId}'`)
 
-      const [existingPlate] = (res as { rows: unknown[] }).rows
+      const [existingPlate] = (res as { recordset: unknown[] }).recordset
 
       // Check for existing plate and prompt
       if (!existingPlate)
@@ -236,9 +236,9 @@ export class UploadResultsComponent implements OnDestroy
     let mapping;
     try
     {
-      const mappingRes = await this.dbService.query(`SELECT * FROM mapping WHERE pcr_plate_id='${this.pcrPlateId}';`)
+      const mappingRes = await this.dbService.query(`SELECT * FROM cltp.mapping WHERE pcr_plate_id='${this.pcrPlateId}';`)
 
-      mapping = (mappingRes as { rows: MappingView[] }).rows
+      mapping = (mappingRes as { recordset: MappingView[] }).recordset
     }
     catch (e)
     {
@@ -312,13 +312,13 @@ export class UploadResultsComponent implements OnDestroy
     if (!this.resultData) throw new Error("Result data not available")
 
     // Create the result
-    const q = [`INSERT INTO result (${Object.keys(this.resultData.result).join(',')}) VALUES (${Object.values(this.resultData.result).map(sqlValueFormatter).join(',')});`]
+    const q = [`INSERT INTO cltp.result (${Object.keys(this.resultData.result).join(',')}) VALUES (${Object.values(this.resultData.result).map(sqlValueFormatter).join(',')});`]
 
     // Create all results
-    for (const entry of this.resultData.resultEntries) q.push(`INSERT INTO result_entry (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
+    for (const entry of this.resultData.resultEntries) q.push(`INSERT INTO cltp.result_entry (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
 
     // Create all interpretations
-    for (const entry of this.resultData.interpretations) q.push(`INSERT INTO interpretation (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
+    for (const entry of this.resultData.interpretations) q.push(`INSERT INTO cltp.interpretation (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
 
 
     try

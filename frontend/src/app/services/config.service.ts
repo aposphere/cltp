@@ -33,7 +33,7 @@ export class ConfigService
         password: password
       }
 
-      await this.dbService.query("SELECT NOW()", credentials)
+      await this.dbService.query("SELECT 1 + 1 AS TEST_QUERY", credentials)
 
       this.credentials.next(credentials);
     }

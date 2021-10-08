@@ -1,2 +1,3 @@
 proxy/certs/**
 !proxy/certs/.gitkeep
+php-dist

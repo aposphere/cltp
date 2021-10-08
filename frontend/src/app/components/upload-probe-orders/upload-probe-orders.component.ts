@@ -98,7 +98,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
       ...(JSON.parse(this.form.value.data) as ProbeOrderJSON)
     };
 
-    const q = `INSERT INTO probe_order (${Object.keys(order).join(',')}) VALUES (${Object.values(order).map(sqlValueFormatter).join(',')});`
+    const q = `INSERT INTO cltp.probe_order (${Object.keys(order).join(',')}) VALUES (${Object.values(order).map(sqlValueFormatter).join(',')});`
 
     try
     {
@@ -123,7 +123,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
   {
     const q = []
 
-    for (const entry of this.uploadedOrders) q.push(`INSERT INTO probe_order (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
+    for (const entry of this.uploadedOrders) q.push(`INSERT INTO cltp.probe_order (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
 
     try
     {

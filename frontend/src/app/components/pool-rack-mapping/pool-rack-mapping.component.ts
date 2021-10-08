@@ -114,18 +114,18 @@ export class PoolRackMappingComponent implements OnDestroy
     try
     {
       // Get most recent rack
-      const res = await this.dbService.query(`SELECT rack_id, i FROM rack WHERE rack_id = '${rackId}' ORDER BY i DESC LIMIT 1`)
+      const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.rack WHERE rack_id = '${rackId}' ORDER BY i DESC`)
 
-      mostRecentRack = (res as { rows: Rack[] }).rows[0]
+      mostRecentRack = (res as { recordset: Rack[] }).recordset[0]
 
       if (mostRecentRack)
       {
         try
         {
           // Get unused racks to verify
-          const res = await this.dbService.query(`SELECT rack_id, i FROM unused_rack WHERE rack_id = '${rackId}' AND i = ${mostRecentRack.i}`)
+          const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.unused_rack WHERE rack_id = '${rackId}' AND i = ${mostRecentRack.i}`)
 
-          const [previousRack] = (res as { rows: Rack[] }).rows
+          const [previousRack] = (res as { recordset: Rack[] }).recordset
 
           // Check for unused existing rack and prompt
           if (previousRack)
@@ -197,9 +197,9 @@ export class PoolRackMappingComponent implements OnDestroy
       try
       {
         // Get pools to verify
-        const res = await this.dbService.query(`SELECT pool_id FROM pool WHERE pool_id = '${poolId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT pool_id FROM cltp.pool WHERE pool_id = '${poolId}'`)
 
-        const [existingPool] = (res as { rows: Pool[] }).rows
+        const [existingPool] = (res as { recordset: Pool[] }).recordset
 
         // Check for unused existing pool and prompt
         if (!existingPool)
@@ -226,9 +226,9 @@ export class PoolRackMappingComponent implements OnDestroy
       try
       {
         // Get pool rack mapping to verify
-        const res = await this.dbService.query(`SELECT * FROM connection_pool_rack WHERE pool_id = '${poolId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT * FROM cltp.connection_pool_rack WHERE pool_id = '${poolId}'`)
 
-        const [existingMapping] = (res as { rows: unknown[] }).rows
+        const [existingMapping] = (res as { recordset: unknown[] }).recordset
 
         // Check for existing mapping
         if (existingMapping)
@@ -284,11 +284,11 @@ export class PoolRackMappingComponent implements OnDestroy
         i: this.rackI
       };
 
-      let q = `INSERT INTO rack (rack_id, i) VALUES ('${rack.rack_id}',${rack.i});`
+      let q = `INSERT INTO cltp.rack (rack_id, i) VALUES ('${rack.rack_id}',${rack.i});`
 
       for (let el of this.addedPools)
       {
-        q += `INSERT INTO connection_pool_rack (rack_id, rack_i, pool_id, coordinate) VALUES ('${rack.rack_id}',${rack.i},'${el.pool.pool_id}','${el.coordinate}');`
+        q += `INSERT INTO cltp.connection_pool_rack (rack_id, rack_i, pool_id, coordinate) VALUES ('${rack.rack_id}',${rack.i},'${el.pool.pool_id}','${el.coordinate}');`
       }
 
       try
@@ -327,8 +327,8 @@ export class PoolRackMappingComponent implements OnDestroy
     };
 
     const q = `
-    INSERT INTO pool (pool_id) VALUES ('${pool.pool_id}');
-    INSERT INTO pool_arrival (${Object.keys(poolArrival).join(',')}) VALUES (${Object.values(poolArrival).map(sqlValueFormatter).join(',')});
+    INSERT INTO cltp.pool (pool_id) VALUES ('${pool.pool_id}');
+    INSERT INTO cltp.pool_arrival (${Object.keys(poolArrival).join(',')}) VALUES (${Object.values(poolArrival).map(sqlValueFormatter).join(',')});
     `
 
     try

@@ -101,9 +101,9 @@ export class RackPlateMappingComponent implements OnDestroy
     try
     {
       // Get plates to verify
-      const res = await this.dbService.query(`SELECT plate_id FROM plate WHERE plate_id = '${plateId}' LIMIT 1`)
+      const res = await this.dbService.query(`SELECT plate_id FROM cltp.plate WHERE plate_id = '${plateId}'`)
 
-      const [existingPlate] = (res as { rows: Plate[] }).rows
+      const [existingPlate] = (res as { recordset: Plate[] }).recordset
 
       // Check for existing plate and prompt
       if (existingPlate)
@@ -163,9 +163,9 @@ export class RackPlateMappingComponent implements OnDestroy
       try
       {
         // Get racks to verify
-        const res = await this.dbService.query(`SELECT rack_id FROM rack WHERE rack_id = '${rackId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT rack_id FROM cltp.rack WHERE rack_id = '${rackId}'`)
 
-        const [existingRack] = (res as { rows: Rack[] }).rows
+        const [existingRack] = (res as { recordset: Rack[] }).recordset
 
         // Check for unused existing pool and prompt
         if (!existingRack)
@@ -186,9 +186,9 @@ export class RackPlateMappingComponent implements OnDestroy
       try
       {
         // Get unused racks to verify
-        const res = await this.dbService.query(`SELECT rack_id, i FROM unused_rack WHERE rack_id = '${rackId}' ORDER BY i DESC LIMIT 1`)
+        const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.unused_rack WHERE rack_id = '${rackId}' ORDER BY i DESC`)
 
-        const [previousRack] = (res as { rows: Rack[] }).rows
+        const [previousRack] = (res as { recordset: Rack[] }).recordset
 
         // Check for unused existing rack and prompt
         if (!previousRack)
@@ -210,9 +210,9 @@ export class RackPlateMappingComponent implements OnDestroy
       try
       {
         // Get most recent rack
-        const res = await this.dbService.query(`SELECT rack_id, i FROM rack WHERE rack_id = '${rackId}' ORDER BY i DESC LIMIT 1`)
+        const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.rack WHERE rack_id = '${rackId}' ORDER BY i DESC`)
 
-        const [mostRecentRack] = (res as { rows: Rack[] }).rows
+        const [mostRecentRack] = (res as { recordset: Rack[] }).recordset
 
         rackI = mostRecentRack.i
       }
@@ -263,11 +263,11 @@ export class RackPlateMappingComponent implements OnDestroy
         plate_id: this.plateId
       };
 
-      let q = `INSERT INTO plate (plate_id) VALUES ('${plate.plate_id}');`
+      let q = `INSERT INTO cltp.plate (plate_id) VALUES ('${plate.plate_id}');`
 
       for (let el of this.addedRacks)
       {
-        q += `INSERT INTO connection_rack_plate (plate_id, rack_id, rack_i, coordinate) VALUES ('${plate.plate_id}','${el.rack.rack_id}','${el.rack.i}','${el.coordinate}');`
+        q += `INSERT INTO cltp.connection_rack_plate (plate_id, rack_id, rack_i, coordinate) VALUES ('${plate.plate_id}','${el.rack.rack_id}','${el.rack.i}','${el.coordinate}');`
       }
 
       try

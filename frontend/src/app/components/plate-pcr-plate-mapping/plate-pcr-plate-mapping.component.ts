@@ -99,9 +99,9 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     try
     {
       // Get prc plates to verify
-      const res = await this.dbService.query(`SELECT pcr_plate_id FROM pcr_plate WHERE pcr_plate_id = '${pcrPlateId}' LIMIT 1`)
+      const res = await this.dbService.query(`SELECT pcr_plate_id FROM cltp.pcr_plate WHERE pcr_plate_id = '${pcrPlateId}'`)
 
-      const [existingPlate] = (res as { rows: Plate[] }).rows
+      const [existingPlate] = (res as { recordset: Plate[] }).recordset
 
       // Check for existing pcr plate and prompt
       if (existingPlate)
@@ -162,9 +162,9 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       try
       {
         // Get plate to verify
-        const res = await this.dbService.query(`SELECT plate_id FROM plate WHERE plate_id = '${plateId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT plate_id FROM cltp.plate WHERE plate_id = '${plateId}'`)
 
-        const [existingPlate] = (res as { rows: Plate[] }).rows
+        const [existingPlate] = (res as { recordset: Plate[] }).recordset
 
         // Check for unused existing plate and prompt
         if (!existingPlate)
@@ -184,9 +184,9 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       try
       {
         // Get pool rack mapping to verify
-        const res = await this.dbService.query(`SELECT * FROM connection_plate_pcr_plate WHERE plate_id = '${plateId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT * FROM cltp.connection_plate_pcr_plate WHERE plate_id = '${plateId}'`)
 
-        const [existingMapping] = (res as { rows: unknown[] }).rows
+        const [existingMapping] = (res as { recordset: unknown[] }).recordset
 
         // Check for existing mapping
         if (existingMapping)
@@ -241,11 +241,11 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
         pcr_plate_id: this.pcrPlateId
       };
 
-      let q = `INSERT INTO pcr_plate (pcr_plate_id) VALUES ('${pcrPlate.pcr_plate_id}');`
+      let q = `INSERT INTO cltp.pcr_plate (pcr_plate_id) VALUES ('${pcrPlate.pcr_plate_id}');`
 
       for (let el of this.addedPlates)
       {
-        q += `INSERT INTO connection_plate_pcr_plate (pcr_plate_id, plate_id, coordinate) VALUES ('${pcrPlate.pcr_plate_id}','${el.plate.plate_id}','${el.coordinate}');`
+        q += `INSERT INTO cltp.connection_plate_pcr_plate (pcr_plate_id, plate_id, coordinate) VALUES ('${pcrPlate.pcr_plate_id}','${el.plate.plate_id}','${el.coordinate}');`
       }
 
       try

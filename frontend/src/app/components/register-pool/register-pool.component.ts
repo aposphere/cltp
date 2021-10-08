@@ -83,8 +83,8 @@ export class RegisterPoolComponent implements OnDestroy
     };
 
     const q = `
-    INSERT INTO pool (pool_id) VALUES ('${pool.pool_id}');
-    INSERT INTO pool_arrival (${Object.keys(poolArrival).join(',')}) VALUES (${Object.values(poolArrival).map(sqlValueFormatter).join(',')});
+    INSERT INTO cltp.pool (pool_id) VALUES ('${pool.pool_id}');
+    INSERT INTO cltp.pool_arrival (${Object.keys(poolArrival).join(',')}) VALUES (${Object.values(poolArrival).map(sqlValueFormatter).join(',')});
     `
 
     try

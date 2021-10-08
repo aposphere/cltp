@@ -98,9 +98,9 @@ export class PoolingComponent implements OnDestroy
     try
     {
       // Get pools to verify
-      const res = await this.dbService.query(`SELECT pool_id FROM pool WHERE pool_id = '${poolId}' LIMIT 1`)
+      const res = await this.dbService.query(`SELECT pool_id FROM cltp.pool WHERE pool_id = '${poolId}'`)
 
-      const [existingPool] = (res as { rows: Pool[] }).rows
+      const [existingPool] = (res as { recordset: Pool[] }).recordset
 
       // Check for existing pool and prompt
       if (existingPool)
@@ -161,9 +161,9 @@ export class PoolingComponent implements OnDestroy
       try
       {
         // Get sample to verify
-        const res = await this.dbService.query(`SELECT sample_id FROM sample WHERE sample_id = '${sampleId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT sample_id FROM cltp.sample WHERE sample_id = '${sampleId}'`)
 
-        const [existingSample] = (res as { rows: Sample[] }).rows
+        const [existingSample] = (res as { recordset: Sample[] }).recordset
 
         // Check for unused existing sample and prompt
         if (!existingSample)
@@ -183,9 +183,9 @@ export class PoolingComponent implements OnDestroy
       try
       {
         // Get pooling to verify
-        const res = await this.dbService.query(`SELECT * FROM connection_pool_sample WHERE sample_id = '${sampleId}' LIMIT 1`)
+        const res = await this.dbService.query(`SELECT * FROM cltp.connection_pool_sample WHERE sample_id = '${sampleId}'`)
 
-        const [existingPooling] = (res as { rows: unknown[] }).rows
+        const [existingPooling] = (res as { recordset: unknown[] }).recordset
 
         // Check for existing pooling
         if (existingPooling)
@@ -218,10 +218,10 @@ export class PoolingComponent implements OnDestroy
   {
     if (this.poolId && this.credentials)
     {
-      let q = `INSERT INTO pool (pool_id) VALUES ('${this.poolId}');`
+      let q = `INSERT INTO cltp.pool (pool_id) VALUES ('${this.poolId}');`
       for (let el of this.addedSamples)
       {
-        q += `INSERT INTO connection_pool_sample (pool_id, sample_id, technician, source, comment) VALUES ('${this.poolId}','${el.sample_id}','${this.credentials.username}','${this.source || ''}','${this.comment || ''}');`
+        q += `INSERT INTO cltp.connection_pool_sample (pool_id, sample_id, technician, source, comment) VALUES ('${this.poolId}','${el.sample_id}','${this.credentials.username}','${this.source || ''}','${this.comment || ''}');`
       }
 
       try

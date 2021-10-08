@@ -14,6 +14,7 @@ import { DownloadProbeResultsComponent } from './components/download-probe-resul
 const routes: Routes =
 [
   { path: '', pathMatch: 'full', redirectTo: '/home' },
+  { path: 'cltp', pathMatch: 'full', redirectTo: '/home' },
   {
     path: 'home',
     component: HomeComponent

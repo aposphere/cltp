@@ -86,7 +86,7 @@ export class SystemPopupsComponent implements OnDestroy, OnInit
 
       console.log(this.staffId, this.sampleId)
 
-      const q = `INSERT INTO sample (sample_id, staff_id) VALUES ('${this.sampleId}','${this.staffId}');`
+      const q = `INSERT INTO cltp.sample (sample_id, staff_id) VALUES ('${this.sampleId}','${this.staffId}');`
 
       try
       {

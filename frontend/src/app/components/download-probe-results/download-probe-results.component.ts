@@ -34,9 +34,9 @@ export class DownloadProbeResultsComponent implements OnDestroy
     let results;
     try
     {
-      const resultsRes = await this.dbService.query(`SELECT * FROM probe_result;`)
+      const resultsRes = await this.dbService.query(`SELECT * FROM cltp.probe_result;`)
 
-      results = (resultsRes as { rows: unknown[] }).rows
+      results = (resultsRes as { recordset: unknown[] }).recordset
     }
     catch (e)
     {
@@ -57,9 +57,9 @@ export class DownloadProbeResultsComponent implements OnDestroy
     let results;
     try
     {
-      const resultsRes = await this.dbService.query(`SELECT * FROM internal_probe_result;`)
+      const resultsRes = await this.dbService.query(`SELECT * FROM cltp.internal_probe_result;`)
 
-      results = (resultsRes as { rows: unknown[] }).rows
+      results = (resultsRes as { recordset: unknown[] }).recordset
     }
     catch (e)
     {
