@@ -2,15 +2,15 @@
 ini_set('log_errors', 1);
 error_reporting(E_ALL & ~E_NOTICE);
 
-$endpoint = $_ENV["ENDPOINT"] ?: 'http://localhost';
-$port_ = $_ENV["PORT"] ?: '8080';
+#####################################
+# Provide the db access config here #
+#####################################
 $dbEndpoint = $_ENV["MSSQL_ENDPOINT"] ?: 'db';
 $dbPort = intval($_ENV["MSSQL_PORT"]) ?: 1433;
 $dbDatabase = $_ENV["MSSQL_DATABASE"] ?: 'test0';
 $dbUsername = $_ENV["MSSQL_USERNAME"] ?: 'cltp';
 $dbPassword = $_ENV["MSSQL_PASSWORD"] ?: 'cltp-aposphere';
-$frontendEndpoint = $_ENV["FRONTEND_ENDPOINT"] ?: 'http://localhost';
-$frontendPort = $_ENV["FRONTEND_PORT"] ?: '4200';
+
 $servicePassword = $_ENV["SERVICE_PASSWORD"] ?: 'cltp';
 
 require_once("../db.php");
@@ -21,12 +21,9 @@ if ($_SERVER['REQUEST_METHOD'] == "GET")
 }
 else if ($_SERVER['REQUEST_METHOD'] == "POST")
 {
-  $inputJSON = file_get_contents('php://input');
-  $input = json_decode($inputJSON, FALSE);
-
-  $query = $input->query;
-  $username = $input->username;
-  $password = $input->password;
+  $query = $_POST["query"];
+  $username = $_POST["username"];
+  $password = $_POST["password"];
   
   if ($password != $servicePassword) 
   {

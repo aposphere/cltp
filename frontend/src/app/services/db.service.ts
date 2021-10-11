@@ -30,21 +30,21 @@ export class DBService
 
     console.info("Run Query: ", query)
 
-    return this.http.post(environment.backend,
-    {
-      query: query,
-      ...this.credentials
-    }).toPromise();
+    const formData = new FormData();
+    formData.set("query", query)
+    for (const key in this.credentials) formData.set(key, this.credentials[key as keyof Credentials])
+
+    return this.http.post(environment.backend, formData).toPromise();
   }
 
   async anonymousQuery(query: string): Promise<unknown>
   {
     console.info("Run Anonymous Query: ", query)
 
-    return this.http.post(environment.backend,
-    {
-      query: query,
-      ...ANONYMOUS_CREDENTIALS
-    }).toPromise();
+    const formData = new FormData();
+    formData.set("query", query)
+    for (const key in ANONYMOUS_CREDENTIALS) formData.set(key, ANONYMOUS_CREDENTIALS[key as keyof Credentials])
+
+    return this.http.post(environment.backend, formData).toPromise();
   }
 }

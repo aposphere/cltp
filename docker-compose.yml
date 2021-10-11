@@ -57,9 +57,9 @@ services:
   cltp-frontend:
     container_name: cltp-frontend
     image: cltp-frontend:latest
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    # build:
+    #   context: ./frontend
+    #   dockerfile: Dockerfile
     # # Uncomment this for node backend
     # ports:
       # - "80:80"

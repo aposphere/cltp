@@ -158,7 +158,7 @@ export class UploadResultsComponent implements OnDestroy
     {
       id: v4(),
       pcr_plate_id: this.pcrPlateId,
-      raw: resultRaw.join("\n")
+      raw: "" // resultRaw.join("\n")
     }
 
 
@@ -193,7 +193,7 @@ export class UploadResultsComponent implements OnDestroy
         coordinate: n1n2[COL_COORDINATE],
         n1n2_cq: n1n2[COL_CQ].toLowerCase() !== "undetermined" ? +n1n2[COL_CQ] : undefined,
         human_ic_cq: humanIC[COL_CQ].toLowerCase() !== "undetermined" ? +humanIC[COL_CQ] : undefined,
-        raw: [rnaICRaw, n1n2Raw, humanIC].join("\n")
+        raw: "" // [rnaICRaw, n1n2Raw, humanIC].join("\n")
       }
 
       resultEntries.push(resultEntry)
@@ -315,11 +315,13 @@ export class UploadResultsComponent implements OnDestroy
     const q = [`INSERT INTO cltp.result (${Object.keys(this.resultData.result).join(',')}) VALUES (${Object.values(this.resultData.result).map(sqlValueFormatter).join(',')});`]
 
     // Create all results
-    for (const entry of this.resultData.resultEntries) q.push(`INSERT INTO cltp.result_entry (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
+    // for (const entry of this.resultData.resultEntries.filter((entry) => this.resultData?.interpretations.some((inter) => entry.id === inter.result_entry_id))) q.push(`INSERT INTO cltp.result_entry (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
 
-    // Create all interpretations
-    for (const entry of this.resultData.interpretations) q.push(`INSERT INTO cltp.interpretation (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
+    // // Create all interpretations
+    // for (const entry of this.resultData.interpretations) q.push(`INSERT INTO cltp.interpretation (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')});`)
 
+    for (const entry of this.resultData.resultEntries) q.push(`INSERT INTO cltp.result_entry (${Object.keys(entry).join(',')}) VALUES (${Object.values(entry).map(sqlValueFormatter).join(',')}); `)
+    for (const entry of this.resultData.resultEntries) q.push(`INSERT INTO cltp.interpretation (${Object.keys(this.resultData.interpretations[0]).join(',')}) VALUES (${Object.values({ ...this.resultData.interpretations[0], result_entry_id: entry.id }).map(sqlValueFormatter).join(',')});`)
 
     try
     {
