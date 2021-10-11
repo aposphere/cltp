@@ -4,9 +4,8 @@ import { filter, takeUntil } from 'rxjs/operators';
 import { Plate } from 'src/app/interfaces/plate';
 import { Rack } from 'src/app/interfaces/rack';
 import { DBService } from 'src/app/services/db.service';
-import { StateService } from 'src/app/services/state.service';
+import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
-import { v4 } from 'uuid';
 
 const steps = ["identify-plate", "scan-racks", "done"] as const
 type Step = typeof steps[number];
@@ -22,7 +21,7 @@ export class RackPlateMappingComponent implements OnDestroy
   matrix =
   {
     x: ["1", "2", "3", "4"],
-    y: ["A"]
+    y: ["A"],
   }
 
   rackLimit = this.matrix.x.length * this.matrix.y.length
@@ -31,9 +30,7 @@ export class RackPlateMappingComponent implements OnDestroy
 
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
-  plateInputMode: "manual" | "camera" | "scanner" = "scanner"
-
-  rackInputMode: "manual" | "camera" | "scanner" = "scanner"
+  inputDevice: InputDevice = "scanner"
 
   scannerEnabled = false
 
@@ -49,16 +46,22 @@ export class RackPlateMappingComponent implements OnDestroy
   constructor(
     public dbService: DBService,
     public stateService: StateService,
-    public toastsService: ToastsService
+    public toastsService: ToastsService,
   )
   {
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-plate' &&  this.plateInputMode === 'scanner')).subscribe(async (input) =>
+    this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
+    {
+      if (this.inputDevice === "scanner" && (this.currentStep === "identify-plate" || this.currentStep === "scan-racks")) this.stateService.scannerInputEnable.next(false)
+      this.inputDevice = inputDevice
+      if (this.inputDevice === "scanner" && (this.currentStep === "identify-plate" || this.currentStep === "scan-racks")) this.stateService.scannerInputEnable.next(true)
+    });
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-plate' &&  this.inputDevice === 'scanner')).subscribe(async (input) =>
     {
       this.stateService.scanSucess.next()
       await this.checkPlate(input)
-      if (this.rackInputMode !== 'scanner') this.stateService.scannerInputEnable.next(false)
+      if (this.inputDevice !== 'scanner') this.stateService.scannerInputEnable.next(false)
     })
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-racks' && this.rackInputMode === 'scanner')).subscribe(async (input) => this.rackScanSuccessHandler(input))
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-racks' && this.inputDevice === 'scanner')).subscribe((input) => this.rackScanSuccessHandler(input))
   }
 
   reset(): void
@@ -73,20 +76,15 @@ export class RackPlateMappingComponent implements OnDestroy
   start(): void
   {
     this.currentStep = 'identify-plate'
-    if (this.plateInputMode === 'scanner') this.stateService.scannerInputEnable.next(true)
-  }
-
-  changeInputMode(ev: Event)
-  {
-    this.stateService.scannerInputEnable.next((ev.target as HTMLInputElement).value === 'scanner')
+    if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(true)
   }
 
   async plateScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
-    if (this.plateId && (ev !== this.plateId))
+    if (this.plateId && ev !== this.plateId)
     {
-      alert(`Plate id (${ev}) has already been scanned!`)
+      alert(`Plate id (${ ev }) has already been scanned!`)
     }
     // Valid scan
     else
@@ -101,7 +99,7 @@ export class RackPlateMappingComponent implements OnDestroy
     try
     {
       // Get plates to verify
-      const res = await this.dbService.query(`SELECT plate_id FROM cltp.plate WHERE plate_id = '${plateId}'`)
+      const res = await this.dbService.query(`SELECT plate_id FROM cltp.plate WHERE plate_id = '${ plateId }'`)
 
       const [existingPlate] = (res as { recordset: Plate[] }).recordset
 
@@ -133,7 +131,7 @@ export class RackPlateMappingComponent implements OnDestroy
     // Do not scan duplicates
     else if (this.addedRacks.some((el) => el.rack.rack_id === ev))
     {
-      alert(`This rack id (${ev}) has already been scanned!`)
+      alert(`This rack id (${ ev }) has already been scanned!`)
     }
     // Valid scan
     else
@@ -154,7 +152,7 @@ export class RackPlateMappingComponent implements OnDestroy
     {
       if (this.addedRacks.some((el) => el.rack.rack_id === rackId))
       {
-        alert(`This rack id (${rackId}) is duplicate!`)
+        alert(`This rack id (${ rackId }) is duplicate!`)
         return
       }
 
@@ -163,7 +161,7 @@ export class RackPlateMappingComponent implements OnDestroy
       try
       {
         // Get racks to verify
-        const res = await this.dbService.query(`SELECT rack_id FROM cltp.rack WHERE rack_id = '${rackId}'`)
+        const res = await this.dbService.query(`SELECT rack_id FROM cltp.rack WHERE rack_id = '${ rackId }'`)
 
         const [existingRack] = (res as { recordset: Rack[] }).recordset
 
@@ -186,7 +184,7 @@ export class RackPlateMappingComponent implements OnDestroy
       try
       {
         // Get unused racks to verify
-        const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.unused_rack WHERE rack_id = '${rackId}' ORDER BY i DESC`)
+        const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.unused_rack WHERE rack_id = '${ rackId }' ORDER BY i DESC`)
 
         const [previousRack] = (res as { recordset: Rack[] }).recordset
 
@@ -210,7 +208,7 @@ export class RackPlateMappingComponent implements OnDestroy
       try
       {
         // Get most recent rack
-        const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.rack WHERE rack_id = '${rackId}' ORDER BY i DESC`)
+        const res = await this.dbService.query(`SELECT rack_id, i FROM cltp.rack WHERE rack_id = '${ rackId }' ORDER BY i DESC`)
 
         const [mostRecentRack] = (res as { recordset: Rack[] }).recordset
 
@@ -227,7 +225,7 @@ export class RackPlateMappingComponent implements OnDestroy
       this.addedRacks.push(
       {
         rack: { rack_id: rackId, i: rackI },
-        coordinate: this.matrix.y[this.indices.y] + this.matrix.x[this.indices.x]
+        coordinate: this.matrix.y[this.indices.y] + this.matrix.x[this.indices.x],
       })
       this.stateService.scanSucess.next()
       this.nextRackId = undefined
@@ -250,7 +248,7 @@ export class RackPlateMappingComponent implements OnDestroy
   done(): void
   {
     this.currentStep = 'done'
-    if (this.rackInputMode === 'scanner') this.stateService.scannerInputEnable.next(false)
+    if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
 
@@ -260,14 +258,14 @@ export class RackPlateMappingComponent implements OnDestroy
     {
       const plate: Plate =
       {
-        plate_id: this.plateId
+        plate_id: this.plateId,
       };
 
-      let q = `INSERT INTO cltp.plate (plate_id) VALUES ('${plate.plate_id}');`
+      let q = `INSERT INTO cltp.plate (plate_id) VALUES ('${ plate.plate_id }');`
 
-      for (let el of this.addedRacks)
+      for (const el of this.addedRacks)
       {
-        q += `INSERT INTO cltp.connection_rack_plate (plate_id, rack_id, rack_i, coordinate) VALUES ('${plate.plate_id}','${el.rack.rack_id}','${el.rack.i}','${el.coordinate}');`
+        q += `INSERT INTO cltp.connection_rack_plate (plate_id, rack_id, rack_i, coordinate) VALUES ('${ plate.plate_id }','${ el.rack.rack_id }','${ el.rack.i }','${ el.coordinate }');`
       }
 
       try

@@ -14,7 +14,7 @@ export class ScannerInputComponent implements OnDestroy
 {
   active = false
 
-  buffer: string = ""
+  buffer = ""
 
   constructor(public stateService: StateService)
   {
@@ -35,7 +35,7 @@ export class ScannerInputComponent implements OnDestroy
   }
 
   @HostListener('window:keydown', ['$event'])
-  keyEvent(event: KeyboardEvent)
+  keyEvent(event: KeyboardEvent): void
   {
     if (this.active)
     {

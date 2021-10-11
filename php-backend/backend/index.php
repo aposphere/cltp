@@ -24,8 +24,8 @@ else if ($_SERVER['REQUEST_METHOD'] == "POST")
   $query = $_POST["query"];
   $username = $_POST["username"];
   $password = $_POST["password"];
-  
-  if ($password != $servicePassword) 
+
+  if ($password != $servicePassword)
   {
     http_response_code(401);
     die("Service password invalid!");
@@ -33,31 +33,32 @@ else if ($_SERVER['REQUEST_METHOD'] == "POST")
 
   header('Content-Type: application/json; charset=utf-8');
 
-  try 
+  try
   {
     $db = getPDO($dbEndpoint, $dbPort, $dbDatabase, $dbUsername, $dbPassword);
-  } catch (Exception $e) 
+  } catch (Exception $e)
   {
     die("Unable to connect: " . $e->getMessage());
   }
 
-  try 
+  try
   {
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-  
     $db->beginTransaction();
-    $result = $db->query($query);
-
-    if ($result->columnCount() == 0) echo("");
-    else 
+    // Assume it to be a single select query when it starts with SELECT, otherwise execute and do not return anything
+    if (str_starts_with($query, "SELECT"))
     {
+      $result = $db->query($query);
       $rows = $result->fetchAll(PDO::FETCH_ASSOC);
       echo(json_encode(["recordset" => $rows]));
     }
+    else
+    {
+      $result = $db->exec($query);
+    }
 
-    $db->commit();  
-  } 
-  catch (Exception $e) 
+    $db->commit();
+  }
+  catch (Exception $e)
   {
     $db->rollBack();
     http_response_code(500);
@@ -68,27 +69,4 @@ if ($_SERVER['REQUEST_METHOD'] == "OPTIONS")
 {
   echo '';
 }
-
-function test() 
-{
-  try
-  {
-      $con = getPDO();
-      $stmt  = $con->prepare("SELECT 1 + 1 AS TEST_QUERY");
-      $stmt->execute();
-      $dataRows = $stmt->fetchAll(PDO::FETCH_ASSOC);
-      
-      echo(json_encode($dataRows));
-
-      $conn = null;
-  }
-  catch (PDOException $exception)
-  {
-      error_log($exception->getMessage());
-      return null;
-  }
-  return null;
-}
-
-//test();
 ?>

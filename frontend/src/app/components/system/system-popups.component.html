@@ -1,9 +1,7 @@
 <ng-template #connectionPopup let-modal>
   <div class="modal-header">
     <h4 class="modal-title">
-      <span
-        >Welcome
-      </span>
+      <span>Welcome </span>
     </h4>
     <button
       type="button"
@@ -13,22 +11,37 @@
     ></button>
   </div>
   <div class="modal-body">
-    <button class="btn btn-lg btn-outline-primary w-100" (click)="showUploadPersonalSamplePopup()">Upload Personal Sample</button>
+    <button
+      class="btn btn-lg btn-outline-primary w-100"
+      (click)="showUploadPersonalSamplePopup()"
+    >
+      Upload Personal Sample
+    </button>
 
     <div class="d-flex align-items-center my-3">
-      <hr class="flex-grow-1 mx-3">
+      <hr class="flex-grow-1 mx-3" />
       <div class="mx-3 text-muted fw-bold">or</div>
-      <hr class="flex-grow-1 mx-3">
+      <hr class="flex-grow-1 mx-3" />
     </div>
-    <p>
-      Provide the credentials to access the database interface.
-    </p>
+    <p>Provide the credentials to access the database interface.</p>
     <div class="form-floating mb-3">
-      <input type="email" class="form-control" id="username" placeholder="username" [(ngModel)]="username">
+      <input
+        type="email"
+        class="form-control"
+        id="username"
+        placeholder="username"
+        [(ngModel)]="username"
+      />
       <label for="username">Username</label>
     </div>
     <div class="form-floating">
-      <input type="password" class="form-control" id="password" placeholder="Password" [(ngModel)]="password">
+      <input
+        type="password"
+        class="form-control"
+        id="password"
+        placeholder="Password"
+        [(ngModel)]="password"
+      />
       <label for="password">Password</label>
     </div>
   </div>
@@ -45,9 +58,7 @@
 <ng-template #uploadPersonalSamplePopup let-modal>
   <div class="modal-header">
     <h4 class="modal-title">
-      <span
-        >Upload Personal Sample
-      </span>
+      <span>Upload Personal Sample </span>
     </h4>
     <button
       type="button"
@@ -57,11 +68,9 @@
     ></button>
   </div>
   <div class="modal-body">
-    <p>
-      Please scan both your badge and the sample.
-    </p>
+    <p>Please scan both your badge and the sample.</p>
 
-    <hr>
+    <hr />
 
     <div class="row">
       <div *ngIf="!staffId" class="col">
@@ -69,8 +78,8 @@
         <div>
           <zxing-scanner
             style="max-width: 300px"
-          (scanSuccess)="scanSuccessHandler($event)"
-          (scanError)="scanErrorHandler($event)"
+            (scanSuccess)="scanSuccessHandler($event)"
+            (scanError)="scanErrorHandler($event)"
           ></zxing-scanner>
         </div>
       </div>
@@ -79,14 +88,19 @@
         <div>
           <zxing-scanner
             style="max-width: 300px"
-          (scanSuccess)="scanSuccessHandler($event)"
-          (scanError)="scanErrorHandler($event)"
+            (scanSuccess)="scanSuccessHandler($event)"
+            (scanError)="scanErrorHandler($event)"
           ></zxing-scanner>
         </div>
       </div>
       <div *ngIf="staffId && sampleId" class="col">
         <h4>Thank you!</h4>
-        <button class="btn btn-lg btn-outline-primary w-100 mt-5" (click)="modal.close('Register click')">Register Personal Sample</button>
+        <button
+          class="btn btn-lg btn-outline-primary w-100 mt-5"
+          (click)="modal.close('Register click')"
+        >
+          Register Personal Sample
+        </button>
       </div>
     </div>
   </div>

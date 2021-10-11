@@ -11,12 +11,12 @@ cp -R . ../php-dist
 
 cd ../frontend
 
-ng build --configuration=php --base-href /SARSCov2/ --deploy-url /SARSCov2/
+ng build
 
 cp -R dist/cltp/** ../php-dist
 
 cd ../php-backend
 
-cp -R ../php-dist . 
+cp -R ../php-dist .
 
 zip -r cltp.zip php-dist/

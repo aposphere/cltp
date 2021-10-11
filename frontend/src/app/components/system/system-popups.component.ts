@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit, TemplateRef, ViewChild } from '@angular/core';
 import { Subject } from 'rxjs';
 import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
-import { takeUntil, take } from 'rxjs/operators';
+import { takeUntil } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { StateService } from 'src/app/services/state.service';
@@ -16,14 +16,17 @@ import { DBService } from 'src/app/services/db.service';
 export class SystemPopupsComponent implements OnDestroy, OnInit
 {
   username?: string;
+
   password?: string;
 
   staffId?: string;
+
   sampleId?: string;
 
   credentials?: Credentials;
 
   @ViewChild('connectionPopup') connectionPopup?: TemplateRef<HTMLElement>;
+
   @ViewChild('uploadPersonalSamplePopup') uploadPersonalSamplePopup?: TemplateRef<HTMLElement>;
 
   unsubscribe$ = new Subject<void>();
@@ -32,10 +35,11 @@ export class SystemPopupsComponent implements OnDestroy, OnInit
     public dbService: DBService,
     public modalService: NgbModal,
     public stateService: StateService,
-    public configService: ConfigService
+    public configService: ConfigService,
   )
   {
-    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials)
+    this.stateService.uploadPersonalSample.pipe(takeUntil(this.unsubscribe$)).subscribe(() => this.showUploadPersonalSamplePopup())
   }
 
   ngOnInit(): void
@@ -86,7 +90,7 @@ export class SystemPopupsComponent implements OnDestroy, OnInit
 
       console.log(this.staffId, this.sampleId)
 
-      const q = `INSERT INTO cltp.sample (sample_id, staff_id) VALUES ('${this.sampleId}','${this.staffId}');`
+      const q = `INSERT INTO cltp.sample (sample_id, staff_id) VALUES ('${ this.sampleId }','${ this.staffId }');`
 
       try
       {

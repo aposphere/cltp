@@ -15,10 +15,11 @@ import { DBService } from './db.service';
 export class ConfigService
 {
   private readonly credentials: ReplaySubject<Credentials> = new ReplaySubject(1);
+
   public readonly credentials$: Observable<Credentials> = this.credentials.asObservable().pipe(map((el) => ({ ...el })));
 
   constructor(
-    public dbService: DBService
+    public dbService: DBService,
   )
   {
   }
@@ -30,7 +31,7 @@ export class ConfigService
       const credentials =
       {
         username: username,
-        password: password
+        password: password,
       }
 
       await this.dbService.query("SELECT 1 + 1 AS TEST_QUERY", credentials)

@@ -1,9 +1,7 @@
 import { Injectable } from '@angular/core';
-import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { Credentials } from '../interfaces/credentials';
+import { BehaviorSubject, Subject } from 'rxjs';
 
-
+export type InputDevice = "scanner" | "camera" | "manual";
 
 @Injectable(
 {
@@ -11,7 +9,11 @@ import { Credentials } from '../interfaces/credentials';
 })
 export class StateService
 {
+  readonly uploadPersonalSample: Subject<void> = new Subject();
+
   readonly scanSucess: Subject<void> = new Subject();
+
+  readonly inputDevice: BehaviorSubject<InputDevice> = new BehaviorSubject<InputDevice>('scanner');
 
   readonly scannerInputEnable: BehaviorSubject<boolean> = new BehaviorSubject<boolean>(false);
 

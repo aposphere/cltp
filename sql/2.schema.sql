@@ -1,10 +1,10 @@
 /*
  Navicat SQL Server Data Transfer
 
- Source Server         : TEST
+ Source Server         : TEST1
  Source Server Type    : SQL Server
  Source Server Version : 15004178
- Source Host           : localhost:1433
+ Source Host           : cltp.ll:1433
  Source Catalog        : test0
  Source Schema         : cltp
 
@@ -12,7 +12,7 @@
  Target Server Version : 15004178
  File Encoding         : 65001
 
- Date: 08/10/2021 10:44:15
+ Date: 11/10/2021 17:13:31
 */
 
 
@@ -65,9 +65,9 @@ GO
 CREATE TABLE [cltp].[connection_pool_sample] (
   [pool_id] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [sample_id] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [technician] text COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [source] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [comment] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [technician] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [source] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [comment] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -113,6 +113,24 @@ CREATE TABLE [cltp].[interpretation] (
 GO
 
 ALTER TABLE [cltp].[interpretation] SET (LOCK_ESCALATION = TABLE)
+GO
+
+
+-- ----------------------------
+-- Table structure for interpretation_exported
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[interpretation_exported]') AND type IN ('U'))
+	DROP TABLE [cltp].[interpretation_exported]
+GO
+
+CREATE TABLE [cltp].[interpretation_exported] (
+  [id] uniqueidentifier  NOT NULL,
+  [interpretation_id] uniqueidentifier  NOT NULL,
+  [creation_timestamp] datetime DEFAULT getdate() NOT NULL
+)
+GO
+
+ALTER TABLE [cltp].[interpretation_exported] SET (LOCK_ESCALATION = TABLE)
 GO
 
 
@@ -178,8 +196,8 @@ CREATE TABLE [cltp].[pool_arrival] (
   [id] uniqueidentifier  NOT NULL,
   [pool_id] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [technician] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [source] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [comment] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [source] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [comment] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -197,21 +215,21 @@ GO
 
 CREATE TABLE [cltp].[probe_order] (
   [id] uniqueidentifier  NOT NULL,
-  [comment] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_key] text COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [unternehmen_uid] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_typ] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_name] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_abteilung] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_ort] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_postleitzahl] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_strasse] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_email] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_telefon_geschaeft] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [unternehmen_telefon_mobil] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [poolmanager_nachname] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [poolmanager_vorname] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [barcode_nummer] text COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [comment] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_key] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [unternehmen_uid] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_typ] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_name] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_abteilung] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_ort] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_postleitzahl] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_strasse] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_email] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_telefon_geschaeft] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [unternehmen_telefon_mobil] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [poolmanager_nachname] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [poolmanager_vorname] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [barcode_nummer] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -248,7 +266,6 @@ GO
 CREATE TABLE [cltp].[result] (
   [id] uniqueidentifier  NOT NULL,
   [pcr_plate_id] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [raw] text COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -270,7 +287,6 @@ CREATE TABLE [cltp].[result_entry] (
   [coordinate] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [n1n2_cq] float(53)  NULL,
   [human_ic_cq] float(53)  NULL,
-  [raw] text COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -306,10 +322,10 @@ GO
 
 CREATE TABLE [cltp].[staff] (
   [staff_id] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [title] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [first_name] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [last_name] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [email] text COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [title] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [first_name] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [last_name] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
+  [email] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -338,13 +354,55 @@ CREATE VIEW [cltp].[internal_probe_result] AS SELECT 'unternehmen_key' AS untern
     'unternehmen_telefon_mobil'AS unternehmen_telefon_mobil,
     'poolmanager_nachname' AS poolmanager_nachname,
     'poolmanager_vorname' AS poolmanager_vorname,
-    pool.pool_id AS barcode_nummer,
-    interpretation.creation_timestamp AS untersuchung_datum,
-    interpretation.interpretation AS untersuchung_resultat,
+    cltp.pool.pool_id AS barcode_nummer,
+    cltp.interpretation.creation_timestamp AS untersuchung_datum,
+    cltp.interpretation.interpretation AS untersuchung_resultat,
     'Universitaetsspital Neuropathologie' AS untersuchung_absender
-   FROM ((connection_pool_sample
-     JOIN pool ON (((pool.pool_id) = (connection_pool_sample.pool_id))))
-     JOIN interpretation ON (((pool.pool_id) = (interpretation.pool_id))));
+   FROM ((cltp.connection_pool_sample
+     JOIN cltp.pool ON (((cltp.pool.pool_id) = (cltp.connection_pool_sample.pool_id))))
+     JOIN cltp.interpretation ON (((cltp.pool.pool_id) = (cltp.interpretation.pool_id))));
+GO
+
+
+-- ----------------------------
+-- View structure for internal_probe_result_pending
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[internal_probe_result_pending]') AND type IN ('V'))
+	DROP VIEW [cltp].[internal_probe_result_pending]
+GO
+
+CREATE VIEW [cltp].[internal_probe_result_pending] AS SELECT 'unternehmen_key' AS unternehmen_key,
+    'unternehmen_uid' AS unternehmen_uid,
+    'unternehmen_typ' AS unternehmen_typ,
+    'unternehmen_name' AS unternehmen_name,
+    'unternehmen_abteilung' AS unternehmen_abteilung,
+    'unternehmen_ort' AS unternehmen_ort,
+    'unternehmen_postleitzahl' AS unternehmen_postleitzahl,
+    'unternehmen_strasse' AS unternehmen_strasse,
+    'unternehmen_email' AS unternehmen_email,
+    'unternehmen_telefon_geschaeft' AS unternehmen_telefon_geschaeft,
+    'unternehmen_telefon_mobil'AS unternehmen_telefon_mobil,
+    'poolmanager_nachname' AS poolmanager_nachname,
+    'poolmanager_vorname' AS poolmanager_vorname,
+    cltp.pool.pool_id AS barcode_nummer,
+    cltp.interpretation_pending.creation_timestamp AS untersuchung_datum,
+    cltp.interpretation_pending.interpretation AS untersuchung_resultat,
+    'Universitaetsspital Neuropathologie' AS untersuchung_absender
+   FROM ((cltp.connection_pool_sample
+     JOIN cltp.pool ON (((cltp.pool.pool_id) = (cltp.connection_pool_sample.pool_id))))
+     JOIN cltp.interpretation_pending ON (((cltp.pool.pool_id) = (cltp.interpretation_pending.pool_id))));
+GO
+
+
+-- ----------------------------
+-- View structure for interpretation_pending
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[interpretation_pending]') AND type IN ('V'))
+	DROP VIEW [cltp].[interpretation_pending]
+GO
+
+CREATE VIEW [cltp].[interpretation_pending] AS SELECT cltp.interpretation.* FROM (cltp.interpretation LEFT JOIN cltp.interpretation_exported ON cltp.interpretation.id = cltp.interpretation_exported.interpretation_id)
+WHERE cltp.interpretation_exported.id IS NULL;
 GO
 
 
@@ -355,21 +413,69 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[m
 	DROP VIEW [cltp].[mapping]
 GO
 
-CREATE VIEW [cltp].[mapping] AS SELECT pcr_plate.pcr_plate_id,
-    connection_plate_pcr_plate.coordinate AS plate_coordinate,
-    plate.plate_id,
-    connection_rack_plate.coordinate AS rack_coordinate,
-    rack.rack_id,
-    rack.i AS rack_i,
-    connection_pool_rack.coordinate AS pool_coordinate,
-    pool.pool_id
-   FROM ((((((pcr_plate
-     JOIN connection_plate_pcr_plate ON (((pcr_plate.pcr_plate_id) = (connection_plate_pcr_plate.pcr_plate_id))))
-     JOIN plate ON (((connection_plate_pcr_plate.plate_id) = (plate.plate_id))))
-     JOIN connection_rack_plate ON (((plate.plate_id) = (connection_rack_plate.plate_id))))
-     JOIN rack ON ((((connection_rack_plate.rack_id) = (rack.rack_id)) AND ((connection_rack_plate.rack_i) = (rack.i)))))
-     JOIN connection_pool_rack ON ((((rack.rack_id) = (connection_pool_rack.rack_id)) AND ((rack.i) = (connection_pool_rack.rack_i)))))
-     JOIN pool ON (((connection_pool_rack.pool_id) = (pool.pool_id))));
+CREATE VIEW [cltp].[mapping] AS SELECT cltp.pcr_plate.pcr_plate_id,
+    cltp.connection_plate_pcr_plate.coordinate AS plate_coordinate,
+    cltp.plate.plate_id,
+    cltp.connection_rack_plate.coordinate AS rack_coordinate,
+    cltp.rack.rack_id,
+    cltp.rack.i AS rack_i,
+    cltp.connection_pool_rack.coordinate AS pool_coordinate,
+    cltp.pool.pool_id
+   FROM ((((((cltp.pcr_plate
+     JOIN cltp.connection_plate_pcr_plate ON (((cltp.pcr_plate.pcr_plate_id) = (cltp.connection_plate_pcr_plate.pcr_plate_id))))
+     JOIN cltp.plate ON (((cltp.connection_plate_pcr_plate.plate_id) = (cltp.plate.plate_id))))
+     JOIN cltp.connection_rack_plate ON (((cltp.plate.plate_id) = (cltp.connection_rack_plate.plate_id))))
+     JOIN cltp.rack ON ((((cltp.connection_rack_plate.rack_id) = (cltp.rack.rack_id)) AND ((cltp.connection_rack_plate.rack_i) = (cltp.rack.i)))))
+     JOIN cltp.connection_pool_rack ON ((((cltp.rack.rack_id) = (cltp.connection_pool_rack.rack_id)) AND ((cltp.rack.i) = (cltp.connection_pool_rack.rack_i)))))
+     JOIN cltp.pool ON (((cltp.connection_pool_rack.pool_id) = (cltp.pool.pool_id))));
+GO
+
+
+-- ----------------------------
+-- View structure for pcr_plate_ready
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[pcr_plate_ready]') AND type IN ('V'))
+	DROP VIEW [cltp].[pcr_plate_ready]
+GO
+
+CREATE VIEW [cltp].[pcr_plate_ready] AS SELECT cltp.pcr_plate.* FROM (cltp.pcr_plate LEFT JOIN cltp.result ON cltp.pcr_plate.pcr_plate_id = cltp.result.pcr_plate_id)
+WHERE cltp.result.pcr_plate_id IS NULL;
+GO
+
+
+-- ----------------------------
+-- View structure for plate_ready
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[plate_ready]') AND type IN ('V'))
+	DROP VIEW [cltp].[plate_ready]
+GO
+
+CREATE VIEW [cltp].[plate_ready] AS SELECT cltp.plate.* FROM (cltp.plate LEFT JOIN cltp.connection_plate_pcr_plate ON cltp.plate.plate_id = cltp.connection_plate_pcr_plate.plate_id)
+WHERE cltp.connection_plate_pcr_plate.plate_id IS NULL;
+GO
+
+
+-- ----------------------------
+-- View structure for pool_ready
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[pool_ready]') AND type IN ('V'))
+	DROP VIEW [cltp].[pool_ready]
+GO
+
+CREATE VIEW [cltp].[pool_ready] AS SELECT cltp.pool.* FROM (cltp.pool LEFT JOIN cltp.connection_pool_rack ON cltp.pool.pool_id = cltp.connection_pool_rack.pool_id)
+WHERE cltp.connection_pool_rack.pool_id IS NULL;
+GO
+
+
+-- ----------------------------
+-- View structure for probe_order_ready
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[probe_order_ready]') AND type IN ('V'))
+	DROP VIEW [cltp].[probe_order_ready]
+GO
+
+CREATE VIEW [cltp].[probe_order_ready] AS SELECT cltp.probe_order.* FROM (cltp.probe_order LEFT JOIN cltp.pool ON cltp.probe_order.barcode_nummer = cltp.pool.pool_id)
+WHERE cltp.pool.pool_id IS NULL;
 GO
 
 
@@ -380,25 +486,78 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[p
 	DROP VIEW [cltp].[probe_result]
 GO
 
-CREATE VIEW [cltp].[probe_result] AS SELECT probe_order.unternehmen_key,
-    probe_order.unternehmen_uid,
-    probe_order.unternehmen_typ,
-    probe_order.unternehmen_name,
-    probe_order.unternehmen_abteilung,
-    probe_order.unternehmen_ort,
-    probe_order.unternehmen_postleitzahl,
-    probe_order.unternehmen_strasse,
-    probe_order.unternehmen_email,
-    probe_order.unternehmen_telefon_geschaeft,
-    probe_order.unternehmen_telefon_mobil,
-    probe_order.poolmanager_nachname,
-    probe_order.poolmanager_vorname,
-    probe_order.barcode_nummer,
-    interpretation.creation_timestamp AS untersuchung_datum,
-    interpretation.interpretation AS untersuchung_resultat,
+CREATE VIEW [cltp].[probe_result] AS SELECT cltp.probe_order.unternehmen_key,
+    cltp.probe_order.unternehmen_uid,
+    cltp.probe_order.unternehmen_typ,
+    cltp.probe_order.unternehmen_name,
+    cltp.probe_order.unternehmen_abteilung,
+    cltp.probe_order.unternehmen_ort,
+    cltp.probe_order.unternehmen_postleitzahl,
+    cltp.probe_order.unternehmen_strasse,
+    cltp.probe_order.unternehmen_email,
+    cltp.probe_order.unternehmen_telefon_geschaeft,
+    cltp.probe_order.unternehmen_telefon_mobil,
+    cltp.probe_order.poolmanager_nachname,
+    cltp.probe_order.poolmanager_vorname,
+    cltp.probe_order.barcode_nummer,
+    cltp.interpretation.creation_timestamp AS untersuchung_datum,
+    cltp.interpretation.interpretation AS untersuchung_resultat,
     'Universitaetsspital Neuropathologie' AS untersuchung_absender
-   FROM (probe_order
-     JOIN interpretation ON ((CAST(probe_order.barcode_nummer as varchar) = (interpretation.pool_id))));
+   FROM (cltp.probe_order
+     JOIN cltp.interpretation ON ((cltp.probe_order.barcode_nummer = (cltp.interpretation.pool_id))));
+GO
+
+
+-- ----------------------------
+-- View structure for probe_result_pending
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[probe_result_pending]') AND type IN ('V'))
+	DROP VIEW [cltp].[probe_result_pending]
+GO
+
+CREATE VIEW [cltp].[probe_result_pending] AS SELECT cltp.probe_order.unternehmen_key,
+    cltp.probe_order.unternehmen_uid,
+    cltp.probe_order.unternehmen_typ,
+    cltp.probe_order.unternehmen_name,
+    cltp.probe_order.unternehmen_abteilung,
+    cltp.probe_order.unternehmen_ort,
+    cltp.probe_order.unternehmen_postleitzahl,
+    cltp.probe_order.unternehmen_strasse,
+    cltp.probe_order.unternehmen_email,
+    cltp.probe_order.unternehmen_telefon_geschaeft,
+    cltp.probe_order.unternehmen_telefon_mobil,
+    cltp.probe_order.poolmanager_nachname,
+    cltp.probe_order.poolmanager_vorname,
+    cltp.probe_order.barcode_nummer,
+    cltp.interpretation_pending.creation_timestamp AS untersuchung_datum,
+    cltp.interpretation_pending.interpretation AS untersuchung_resultat,
+    'Universitaetsspital Neuropathologie' AS untersuchung_absender
+   FROM (cltp.probe_order
+     JOIN cltp.interpretation_pending ON ((cltp.probe_order.barcode_nummer = (cltp.interpretation_pending.pool_id))));
+GO
+
+
+-- ----------------------------
+-- View structure for rack_ready
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[rack_ready]') AND type IN ('V'))
+	DROP VIEW [cltp].[rack_ready]
+GO
+
+CREATE VIEW [cltp].[rack_ready] AS SELECT cltp.rack.* FROM (cltp.rack LEFT JOIN cltp.connection_rack_plate ON (cltp.rack.rack_id = cltp.connection_rack_plate.rack_id AND cltp.rack.i = cltp.connection_rack_plate.rack_i))
+WHERE cltp.connection_rack_plate.rack_id IS NULL;
+GO
+
+
+-- ----------------------------
+-- View structure for sample_ready
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[sample_ready]') AND type IN ('V'))
+	DROP VIEW [cltp].[sample_ready]
+GO
+
+CREATE VIEW [cltp].[sample_ready] AS SELECT cltp.sample.* FROM (cltp.sample LEFT JOIN cltp.connection_pool_sample ON cltp.sample.sample_id = cltp.connection_pool_sample.sample_id)
+WHERE cltp.connection_pool_sample.sample_id IS NULL;
 GO
 
 
@@ -409,13 +568,13 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[u
 	DROP VIEW [cltp].[unused_rack]
 GO
 
-CREATE VIEW [cltp].[unused_rack] AS SELECT rack.rack_id,
-    rack.creation_timestamp,
-    rack.i,
-    connection_rack_plate.plate_id
-   FROM (rack
-     LEFT JOIN connection_rack_plate ON ((((rack.rack_id) = (connection_rack_plate.rack_id)) AND (rack.i = connection_rack_plate.rack_i))))
-  WHERE (connection_rack_plate.plate_id IS NULL);
+CREATE VIEW [cltp].[unused_rack] AS SELECT cltp.rack.rack_id,
+    cltp.rack.creation_timestamp,
+    cltp.rack.i,
+    cltp.connection_rack_plate.plate_id
+   FROM (cltp.rack
+     LEFT JOIN cltp.connection_rack_plate ON ((((cltp.rack.rack_id) = (cltp.connection_rack_plate.rack_id)) AND (cltp.rack.i = cltp.connection_rack_plate.rack_i))))
+  WHERE (cltp.connection_rack_plate.plate_id IS NULL);
 GO
 
 
@@ -423,7 +582,16 @@ GO
 -- Uniques structure for table connection_plate_pcr_plate
 -- ----------------------------
 ALTER TABLE [cltp].[connection_plate_pcr_plate] ADD CONSTRAINT [uq_connection_plate_pcr_plate] UNIQUE NONCLUSTERED ([plate_id] ASC, [pcr_plate_id] ASC, [coordinate] ASC)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+ON [PRIMARY]
+GO
+
+
+-- ----------------------------
+-- Primary Key structure for table connection_plate_pcr_plate
+-- ----------------------------
+ALTER TABLE [cltp].[connection_plate_pcr_plate] ADD CONSTRAINT [PK__connecti__2AB1E8A7180368C9] PRIMARY KEY CLUSTERED ([plate_id], [pcr_plate_id], [coordinate])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -432,12 +600,21 @@ GO
 -- Uniques structure for table connection_pool_rack
 -- ----------------------------
 ALTER TABLE [cltp].[connection_pool_rack] ADD CONSTRAINT [layout] UNIQUE NONCLUSTERED ([pool_id] ASC, [rack_id] ASC, [rack_i] ASC, [coordinate] ASC)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
 ALTER TABLE [cltp].[connection_pool_rack] ADD CONSTRAINT [uq_connection_pool_rack] UNIQUE NONCLUSTERED ([pool_id] ASC, [rack_id] ASC, [rack_i] ASC, [coordinate] ASC)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+ON [PRIMARY]
+GO
+
+
+-- ----------------------------
+-- Primary Key structure for table connection_pool_rack
+-- ----------------------------
+ALTER TABLE [cltp].[connection_pool_rack] ADD CONSTRAINT [PK__connecti__07D800CE21BC3B7C] PRIMARY KEY CLUSTERED ([pool_id], [rack_id], [coordinate])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -446,7 +623,7 @@ GO
 -- Primary Key structure for table connection_pool_sample
 -- ----------------------------
 ALTER TABLE [cltp].[connection_pool_sample] ADD CONSTRAINT [connection_pool_sample_pkey] PRIMARY KEY CLUSTERED ([pool_id], [sample_id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -455,7 +632,16 @@ GO
 -- Uniques structure for table connection_rack_plate
 -- ----------------------------
 ALTER TABLE [cltp].[connection_rack_plate] ADD CONSTRAINT [uq_connection_rack_plate] UNIQUE NONCLUSTERED ([rack_id] ASC, [rack_i] ASC, [plate_id] ASC, [coordinate] ASC)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+ON [PRIMARY]
+GO
+
+
+-- ----------------------------
+-- Primary Key structure for table connection_rack_plate
+-- ----------------------------
+ALTER TABLE [cltp].[connection_rack_plate] ADD CONSTRAINT [PK__connecti__DD1A95DC4822EDD9] PRIMARY KEY CLUSTERED ([rack_id], [plate_id], [coordinate])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -464,7 +650,7 @@ GO
 -- Uniques structure for table interpretation
 -- ----------------------------
 ALTER TABLE [cltp].[interpretation] ADD CONSTRAINT [uq_interpretation_result_entry_pool] UNIQUE NONCLUSTERED ([result_entry_id] ASC, [pool_id] ASC, [interpretation] ASC)
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -473,7 +659,16 @@ GO
 -- Primary Key structure for table interpretation
 -- ----------------------------
 ALTER TABLE [cltp].[interpretation] ADD CONSTRAINT [interpretation_pkey] PRIMARY KEY CLUSTERED ([id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+ON [PRIMARY]
+GO
+
+
+-- ----------------------------
+-- Primary Key structure for table interpretation_exported
+-- ----------------------------
+ALTER TABLE [cltp].[interpretation_exported] ADD CONSTRAINT [PK__interpre__3213E83FE41F04F2] PRIMARY KEY CLUSTERED ([id])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -482,7 +677,7 @@ GO
 -- Primary Key structure for table pcr_plate
 -- ----------------------------
 ALTER TABLE [cltp].[pcr_plate] ADD CONSTRAINT [pcr_plate_pkey] PRIMARY KEY CLUSTERED ([pcr_plate_id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -491,7 +686,7 @@ GO
 -- Primary Key structure for table plate
 -- ----------------------------
 ALTER TABLE [cltp].[plate] ADD CONSTRAINT [plate_pkey] PRIMARY KEY CLUSTERED ([plate_id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -500,7 +695,7 @@ GO
 -- Primary Key structure for table pool
 -- ----------------------------
 ALTER TABLE [cltp].[pool] ADD CONSTRAINT [pool_pkey] PRIMARY KEY CLUSTERED ([pool_id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -509,7 +704,7 @@ GO
 -- Primary Key structure for table pool_arrival
 -- ----------------------------
 ALTER TABLE [cltp].[pool_arrival] ADD CONSTRAINT [pool_arrival_pkey] PRIMARY KEY CLUSTERED ([id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -518,7 +713,7 @@ GO
 -- Primary Key structure for table probe_order
 -- ----------------------------
 ALTER TABLE [cltp].[probe_order] ADD CONSTRAINT [probe_order_pkey] PRIMARY KEY CLUSTERED ([id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -527,7 +722,7 @@ GO
 -- Primary Key structure for table rack
 -- ----------------------------
 ALTER TABLE [cltp].[rack] ADD CONSTRAINT [rack_pkey] PRIMARY KEY CLUSTERED ([rack_id], [i])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -536,7 +731,7 @@ GO
 -- Primary Key structure for table result
 -- ----------------------------
 ALTER TABLE [cltp].[result] ADD CONSTRAINT [result_pkey] PRIMARY KEY CLUSTERED ([id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -545,7 +740,7 @@ GO
 -- Primary Key structure for table result_entry
 -- ----------------------------
 ALTER TABLE [cltp].[result_entry] ADD CONSTRAINT [result_entry_pkey] PRIMARY KEY CLUSTERED ([id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -554,7 +749,7 @@ GO
 -- Primary Key structure for table sample
 -- ----------------------------
 ALTER TABLE [cltp].[sample] ADD CONSTRAINT [sample_pkey] PRIMARY KEY CLUSTERED ([sample_id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 
@@ -563,7 +758,7 @@ GO
 -- Primary Key structure for table staff
 -- ----------------------------
 ALTER TABLE [cltp].[staff] ADD CONSTRAINT [staff_pkey] PRIMARY KEY CLUSTERED ([staff_id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)  
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 ON [PRIMARY]
 GO
 

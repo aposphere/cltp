@@ -1,8 +1,10 @@
 const express = require('express')
 const sql = require('mssql')
 const cors = require('cors')
+const multer = require('multer')
 
 const app = express()
+const post = multer()
 
 const endpoint = process.env.ENDPOINT || 'http://localhost'
 const port = process.env.PORT || '8080'
@@ -55,12 +57,13 @@ app.get("/**", (req, response) =>
   response.send('[cltp] backend ready!')
 })
 
-app.post("/**", async (req, response, next) => 
+app.post("/**", post.none(), async (req, response, next) => 
 {
   console.log(`POST: ${req.originalUrl}`)
   const query = req.body.query
   const username = req.body.username
   const password = req.body.password
+  console.log(query, username, password, req.body)
 
   if (password !== servicePassword) return response.status(401).send("Service password invalid")
 

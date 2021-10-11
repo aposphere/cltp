@@ -3,7 +3,7 @@ import { Subject } from 'rxjs';
 import { Sample } from 'src/app/interfaces/sample';
 import { Pool } from 'src/app/interfaces/pool';
 import { DBService } from 'src/app/services/db.service';
-import { StateService } from 'src/app/services/state.service';
+import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
@@ -24,9 +24,7 @@ export class PoolingComponent implements OnDestroy
 
   currentStep?: Step = undefined
 
-  poolInputMode: "manual" | "camera" | "scanner" = "scanner"
-
-  sampleInputMode: "manual" | "camera" | "scanner" = "scanner"
+  inputDevice: InputDevice = "scanner"
 
   poolId?: string
 
@@ -44,17 +42,23 @@ export class PoolingComponent implements OnDestroy
     public dbService: DBService,
     public configService: ConfigService,
     public stateService: StateService,
-    public toastsService: ToastsService
+    public toastsService: ToastsService,
   )
   {
+    this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
+    {
+      if (this.inputDevice === "scanner" && (this.currentStep === "identify-pool" || this.currentStep === "scan-samples")) this.stateService.scannerInputEnable.next(false)
+      this.inputDevice = inputDevice
+      if (this.inputDevice === "scanner" && (this.currentStep === "identify-pool" || this.currentStep === "scan-samples")) this.stateService.scannerInputEnable.next(true)
+    });
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pool' &&  this.poolInputMode === 'scanner')).subscribe(async (input) =>
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pool' &&  this.inputDevice === 'scanner')).subscribe(async (input) =>
     {
       this.stateService.scanSucess.next()
       await this.checkPool(input)
-      if (this.sampleInputMode !== 'scanner') this.stateService.scannerInputEnable.next(false)
+      if (this.inputDevice !== 'scanner') this.stateService.scannerInputEnable.next(false)
     })
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-samples' && this.sampleInputMode === 'scanner')).subscribe(async (input) => this.sampleScanSuccessHandler(input))
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-samples' && this.inputDevice === 'scanner')).subscribe((input) => this.sampleScanSuccessHandler(input))
   }
 
   reset(): void
@@ -70,20 +74,15 @@ export class PoolingComponent implements OnDestroy
   start(): void
   {
     this.currentStep = 'identify-pool'
-    if (this.poolInputMode === 'scanner') this.stateService.scannerInputEnable.next(true)
-  }
-
-  changeInputMode(ev: Event)
-  {
-    this.stateService.scannerInputEnable.next((ev.target as HTMLInputElement).value === 'scanner')
+    if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(true)
   }
 
   async poolScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
-    if (this.poolId && (ev !== this.poolId))
+    if (this.poolId && ev !== this.poolId)
     {
-      alert(`Pool id (${ev}) has already been scanned!`)
+      alert(`Pool id (${ ev }) has already been scanned!`)
     }
     // Valid scan
     else
@@ -98,7 +97,7 @@ export class PoolingComponent implements OnDestroy
     try
     {
       // Get pools to verify
-      const res = await this.dbService.query(`SELECT pool_id FROM cltp.pool WHERE pool_id = '${poolId}'`)
+      const res = await this.dbService.query(`SELECT pool_id FROM cltp.pool WHERE pool_id = '${ poolId }'`)
 
       const [existingPool] = (res as { recordset: Pool[] }).recordset
 
@@ -132,7 +131,7 @@ export class PoolingComponent implements OnDestroy
     // Do not scan duplicates
     else if (this.addedSamples.some((el) => el.sample_id === ev))
     {
-      alert(`This sample id (${ev}) has already been scanned!`)
+      alert(`This sample id (${ ev }) has already been scanned!`)
     }
     // Valid scan
     else
@@ -153,7 +152,7 @@ export class PoolingComponent implements OnDestroy
     {
       if (this.addedSamples.some((el) => el.sample_id === sampleId))
       {
-        alert(`This sample id (${sampleId}) is duplicate!`)
+        alert(`This sample id (${ sampleId }) is duplicate!`)
         return
       }
 
@@ -161,7 +160,7 @@ export class PoolingComponent implements OnDestroy
       try
       {
         // Get sample to verify
-        const res = await this.dbService.query(`SELECT sample_id FROM cltp.sample WHERE sample_id = '${sampleId}'`)
+        const res = await this.dbService.query(`SELECT sample_id FROM cltp.sample WHERE sample_id = '${ sampleId }'`)
 
         const [existingSample] = (res as { recordset: Sample[] }).recordset
 
@@ -183,7 +182,7 @@ export class PoolingComponent implements OnDestroy
       try
       {
         // Get pooling to verify
-        const res = await this.dbService.query(`SELECT * FROM cltp.connection_pool_sample WHERE sample_id = '${sampleId}'`)
+        const res = await this.dbService.query(`SELECT * FROM cltp.connection_pool_sample WHERE sample_id = '${ sampleId }'`)
 
         const [existingPooling] = (res as { recordset: unknown[] }).recordset
 
@@ -211,17 +210,17 @@ export class PoolingComponent implements OnDestroy
   done(): void
   {
     this.currentStep = 'done'
-    if (this.sampleInputMode === 'scanner') this.stateService.scannerInputEnable.next(false)
+    if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
   async upload(): Promise<void>
   {
     if (this.poolId && this.credentials)
     {
-      let q = `INSERT INTO cltp.pool (pool_id) VALUES ('${this.poolId}');`
-      for (let el of this.addedSamples)
+      let q = `INSERT INTO cltp.pool (pool_id) VALUES ('${ this.poolId }');`
+      for (const el of this.addedSamples)
       {
-        q += `INSERT INTO cltp.connection_pool_sample (pool_id, sample_id, technician, source, comment) VALUES ('${this.poolId}','${el.sample_id}','${this.credentials.username}','${this.source || ''}','${this.comment || ''}');`
+        q += `INSERT INTO cltp.connection_pool_sample (pool_id, sample_id, technician, source, comment) VALUES ('${ this.poolId }','${ el.sample_id }','${ this.credentials.username }','${ this.source || '' }','${ this.comment || '' }');`
       }
 
       try

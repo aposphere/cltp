@@ -1,0 +1,166 @@
+{
+  "root": true,
+  "ignorePatterns": [
+    "projects/**/*",
+    "src/test/**/*",
+    "src/index.html",
+    "src/polyfills.ts"
+  ],
+  "overrides": [
+    {
+      "files": [
+        "*.ts"
+      ],
+      "parserOptions": {
+        "project": [
+          "./tsconfig.json"
+        ],
+        "createDefaultProgram": true
+      },
+      "extends": [
+        "plugin:@angular-eslint/recommended",
+        "eslint:recommended",
+        "plugin:@typescript-eslint/recommended",
+        "plugin:@typescript-eslint/recommended-requiring-type-checking",
+        "plugin:@angular-eslint/template/process-inline-templates",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/typescript",
+        "prettier"
+      ],
+      "rules": {
+        "@angular-eslint/component-selector": [
+          "off",
+          {
+            "prefix": "app",
+            "style": "kebab-case",
+            "type": "element"
+          }
+        ],
+        "@angular-eslint/directive-selector": [
+          "off",
+          {
+            "prefix": "app",
+            "style": "camelCase",
+            "type": "attribute"
+          }
+        ],
+        "@typescript-eslint/no-floating-promises": "off",
+        "@typescript-eslint/no-misused-promises": "off",
+        "@typescript-eslint/restrict-template-expressions": "off",
+        "import/no-unresolved": "off",
+        "no-undef": "off",
+        "no-invalid-this": "off",
+        "accessor-pairs": "off",
+        "class-methods-use-this": "off",
+        "no-loop-func": "off",
+        "no-promise-executor-return": "error",
+        "no-template-curly-in-string": "warn",
+        "no-unreachable-loop": "error",
+        "no-useless-backreference": "warn",
+        "array-callback-return": "error",
+        "default-case-last": "warn",
+        "default-param-last": "warn",
+        "grouped-accessor-pairs": "error",
+        "max-classes-per-file": ["error", 5],
+        "no-caller": "error",
+        "no-constructor-return": "error",
+        "no-eq-null": "error",
+        "no-extend-native": "error",
+        "no-extra-bind": "error",
+        "no-extra-label": "error",
+        "no-floating-decimal": "warn",
+        "no-lone-blocks": "error",
+        "no-multi-str": "error",
+        "no-new": "error",
+        "no-new-func": "error",
+        "no-new-wrappers": "error",
+        "no-param-reassign": "error",
+        "no-proto": "error",
+        "no-return-await": "error",
+        "no-self-assign": "error",
+        "no-self-compare": "error",
+        "no-sequences": "error",
+        "no-throw-literal": "error",
+        "no-unused-expressions": "error",
+        "no-useless-call": "error",
+        "no-useless-concat": "error",
+        "no-useless-return": "error",
+        "no-void": "error",
+        "no-warning-comments": "warn",
+        "no-with": "error",
+        "prefer-promise-reject-errors": "error",
+        "radix": "error",
+        "require-await": "warn",
+        "vars-on-top": "error",
+        "wrap-iife": "error",
+        "yoda": "error",
+        "array-bracket-spacing": "warn",
+        "block-spacing": "warn",
+        "brace-style": ["warn", "allman", { "allowSingleLine": true }],
+        "capitalized-comments": "off",
+        "comma-dangle": ["error", "always-multiline"],
+        "comma-spacing": "warn",
+        "computed-property-spacing": "warn",
+        "consistent-this": "error",
+        "eol-last": "warn",
+        "func-call-spacing": "warn",
+        "key-spacing": "warn",
+        "keyword-spacing": "warn",
+        "lines-between-class-members": "warn",
+        "no-array-constructor": "error",
+        "no-nested-ternary": "warn",
+        "no-new-object": "error",
+        "no-tabs": "error",
+        "no-trailing-spaces": "warn",
+        "no-unneeded-ternary": "warn",
+        "no-whitespace-before-property": "error",
+        "nonblock-statement-body-position": "error",
+        "object-curly-spacing": ["error", "always"],
+        "one-var-declaration-per-line": "error",
+        "operator-assignment": "error",
+        "prefer-exponentiation-operator": "error",
+        "prefer-object-spread": "error",
+        "semi-spacing": ["warn", { "before": false, "after": true }],
+        "semi-style": "warn",
+        "space-before-blocks": "warn",
+        "switch-colon-spacing": "warn",
+        "arrow-spacing": "warn",
+        "no-var": "error",
+        "prefer-const": "warn",
+        "prefer-arrow-callback": "error",
+        "prefer-rest-params": "error",
+        "prefer-spread": "error",
+        "prefer-template": "warn",
+        "rest-spread-spacing": "error",
+        "template-curly-spacing": ["error", "always"],
+
+        "@typescript-eslint/array-type": "error",
+        "@typescript-eslint/prefer-for-of": "error",
+        "@typescript-eslint/prefer-includes": "error",
+        "@typescript-eslint/prefer-readonly": "error",
+        "@typescript-eslint/brace-style": ["warn", "allman", { "allowSingleLine": true }],
+        "@typescript-eslint/comma-spacing": "warn",
+        "@typescript-eslint/func-call-spacing": "warn",
+        "@typescript-eslint/keyword-spacing": "warn",
+        "@typescript-eslint/lines-between-class-members": "warn",
+        "@typescript-eslint/no-extra-parens": "error",
+        "@typescript-eslint/no-extra-semi": "error",
+        "@typescript-eslint/unbound-method": ["error", { "ignoreStatic": true }],
+        "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }]
+      }
+    },
+    {
+      "files": [
+        "*.html"
+      ],
+      "extends": [
+        "plugin:@angular-eslint/template/recommended",
+        "plugin:prettier/recommended"
+      ],
+      "rules": {
+        "@angular-eslint/template/no-negated-async": "off"
+      }
+    }
+  ]
+}

@@ -1,5 +1,14 @@
 .interpretation
 {
+  cursor: pointer;
+
+  transition: all 0.2s ease;
+
+  &:hover
+  {
+    transform: scale(1.2);
+  }
+
   &.negative
   {
     background-color: green !important;

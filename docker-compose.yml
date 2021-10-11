@@ -4,7 +4,7 @@ services:
   db:
     container_name: db
     image: mcr.microsoft.com/mssql/server:2019-CU13-ubuntu-20.04
-    ports:  
+    ports:
       - "1433:1433"
     environment:
       ACCEPT_EULA: 'Y'
@@ -12,11 +12,11 @@ services:
       MSSQL_LOG_DIR: /var/opt/sqlserver/log
       MSSQL_BACKUP_DIR: /var/opt/sqlserver/backup
       MSSQL_SA_PASSWORD: Passw0rd1
-    volumes: 
+    volumes:
       - sqlsystem:/var/opt/mssql/
       - sqldata:/var/opt/sqlserver/data
       - sqllog:/var/opt/sqlserver/log
-      - sqlbackup:/var/opt/sqlserver/backup  
+      - sqlbackup:/var/opt/sqlserver/backup
     networks:
       - app-network
   cltp-backend-proxy:
@@ -48,7 +48,7 @@ services:
       dockerfile: Dockerfile
     # Uncomment this for php backend
     ports:
-      - "80:80"
+      # - "80:80"
       - "8082:80"
     networks:
       - app-network
@@ -61,9 +61,9 @@ services:
     #   context: ./frontend
     #   dockerfile: Dockerfile
     # # Uncomment this for node backend
-    # ports:
-      # - "80:80"
-      # - "443:443"
+    ports:
+      - "80:80"
+      - "443:443"
     networks:
       - app-network
     depends_on:

@@ -1,17 +1,37 @@
 <ng-container *ngIf="credentials">
-  <div class="container-fluid d-flex p-2 bg-light border-bottom align-items-center">
+  <div
+    class="container-fluid d-flex p-2 bg-light border-bottom align-items-center"
+  >
     <a routerLink="/" class="text-decoration-none">
       <h4 class="menu d-flex align-items-center rounded bg-white p-2 m-0">
-        <svg  height="16" viewBox="0 0 16 16" version="1.1" width="16">
-          <path d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z"></path>
-      </svg>
+        <svg height="16" viewBox="0 0 16 16" version="1.1" width="16">
+          <path
+            d="M2 4a1 1 0 100-2 1 1 0 000 2zm3.75-1.5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zm0 5a.75.75 0 000 1.5h8.5a.75.75 0 000-1.5h-8.5zM3 8a1 1 0 11-2 0 1 1 0 012 0zm-1 6a1 1 0 100-2 1 1 0 000 2z"
+          ></path>
+        </svg>
       </h4>
     </a>
     <span class="ms-3">Covid Lab Testing Platform</span>
+    <div class="ms-3">
+      <select
+        class="form-select"
+        [(ngModel)]="inputDevice"
+        (change)="changeInputDevice($event)"
+      >
+        <option value="scanner">Scanner</option>
+        <option value="camera">Camera</option>
+        <option value="manual">Manual (DEBUG)</option>
+      </select>
+    </div>
     <div class="flex-grow-1"></div>
-    <div *ngIf="credentials">
-      <span class="text-muted">User</span>
-      <span class="text-primary fw-bold ms-2">{{ credentials.username }}</span>
+    <div ngbDropdown class="d-inline-block" *ngIf="credentials">
+      <button class="btn btn-outline-primary" ngbDropdownToggle>
+        <span>User</span>
+        <span class="fw-bold ms-2">{{ credentials.username }}</span>
+      </button>
+      <div ngbDropdownMenu>
+        <a ngbDropdownItem href=".">Logout</a>
+      </div>
     </div>
   </div>
   <router-outlet></router-outlet>
@@ -19,4 +39,7 @@
 <core-system-popups></core-system-popups>
 <core-toasts-container></core-toasts-container>
 <core-scanner-input></core-scanner-input>
-<div class="scan-success-indicator d-block position-fixed" [class.flash]="flash"></div>
+<div
+  class="scan-success-indicator d-block position-fixed"
+  [class.flash]="flash"
+></div>

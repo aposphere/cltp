@@ -12,7 +12,6 @@ import { ScannerInputComponent } from './components/system/scanner-input.compone
 import { PageNotFoundComponent } from './components/page-not-found/page-not-found.component';
 
 import { UploadProbeOrdersComponent } from './components/upload-probe-orders/upload-probe-orders.component';
-import { RegisterPoolComponent } from './components/register-pool/register-pool.component';
 import { PoolingComponent } from './components/pooling/pooling.component';
 import { PoolRackMappingComponent } from './components/pool-rack-mapping/pool-rack-mapping.component';
 import { RackPlateMappingComponent } from './components/rack-plate-mapping/rack-plate-mapping.component';
@@ -35,13 +34,12 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
     ScannerInputComponent,
     PageNotFoundComponent,
     UploadProbeOrdersComponent,
-    RegisterPoolComponent,
     PoolingComponent,
     PoolRackMappingComponent,
     RackPlateMappingComponent,
     PlatePcrPlateMappingComponent,
     UploadResultsComponent,
-    DownloadProbeResultsComponent
+    DownloadProbeResultsComponent,
   ],
   imports: [
     BrowserModule,
@@ -52,9 +50,9 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
 
     NgbModule,
 
-    ZXingScannerModule
+    ZXingScannerModule,
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [AppComponent],
 })
 export class AppModule { }

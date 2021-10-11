@@ -6,7 +6,7 @@ import { environment } from 'src/environments/environment';
 const ANONYMOUS_CREDENTIALS: Credentials =
 {
   username: "anonymous",
-  password: "anonymous"
+  password: "cltp",
 }
 
 @Injectable(
@@ -18,11 +18,11 @@ export class DBService
   private credentials?: Credentials;
 
   constructor(
-    private readonly http: HttpClient
+    private readonly http: HttpClient,
   )
   { }
 
-  async query(query: string, overrideCredentials?: Credentials): Promise<unknown>
+  query(query: string, overrideCredentials?: Credentials): Promise<unknown>
   {
     if (!this.credentials && !overrideCredentials) throw new Error("No credentials")
 
@@ -37,7 +37,7 @@ export class DBService
     return this.http.post(environment.backend, formData).toPromise();
   }
 
-  async anonymousQuery(query: string): Promise<unknown>
+  anonymousQuery(query: string): Promise<unknown>
   {
     console.info("Run Anonymous Query: ", query)
 

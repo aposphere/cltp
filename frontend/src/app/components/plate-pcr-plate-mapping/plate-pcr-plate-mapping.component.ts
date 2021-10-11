@@ -3,8 +3,7 @@ import { Subject } from 'rxjs';
 import { Plate } from 'src/app/interfaces/plate';
 import { PcrPlate } from 'src/app/interfaces/pcr-plate';
 import { DBService } from 'src/app/services/db.service';
-import { StateService } from 'src/app/services/state.service';
-import { v4 } from 'uuid';
+import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { filter, takeUntil } from 'rxjs/operators';
 
@@ -22,7 +21,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
   matrix =
   {
     x: ["1", "2"],
-    y: ["A", "B"]
+    y: ["A", "B"],
   }
 
   plateLimit = this.matrix.x.length * this.matrix.y.length
@@ -31,9 +30,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
-  pcrPlateInputMode: "manual" | "camera" | "scanner" = "scanner"
-
-  plateInputMode: "manual" | "camera" | "scanner" = "scanner"
+  inputDevice: InputDevice = "scanner"
 
   pcrPlateId?: string
 
@@ -47,16 +44,22 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
   constructor(
     public dbService: DBService,
     public stateService: StateService,
-    public toastsService: ToastsService
+    public toastsService: ToastsService,
   )
   {
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pcr-plate' &&  this.pcrPlateInputMode === 'scanner')).subscribe(async (input) =>
+    this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
+    {
+      if (this.inputDevice === "scanner" && (this.currentStep === "identify-pcr-plate" || this.currentStep === "scan-plates")) this.stateService.scannerInputEnable.next(false)
+      this.inputDevice = inputDevice
+      if (this.inputDevice === "scanner" && (this.currentStep === "identify-pcr-plate" || this.currentStep === "scan-plates")) this.stateService.scannerInputEnable.next(true)
+    });
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pcr-plate' &&  this.inputDevice === 'scanner')).subscribe(async (input) =>
     {
       this.stateService.scanSucess.next()
       await this.checkPcrPlate(input)
-      if (this.plateInputMode !== 'scanner') this.stateService.scannerInputEnable.next(false)
+      if (this.inputDevice !== 'scanner') this.stateService.scannerInputEnable.next(false)
     })
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-plates' && this.plateInputMode === 'scanner')).subscribe(async (input) => this.plateScanSuccessHandler(input))
+    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-plates' && this.inputDevice === 'scanner')).subscribe((input) => this.plateScanSuccessHandler(input))
   }
 
   reset(): void
@@ -71,20 +74,15 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
   start(): void
   {
     this.currentStep = 'identify-pcr-plate'
-    if (this.pcrPlateInputMode === 'scanner') this.stateService.scannerInputEnable.next(true)
-  }
-
-  changeInputMode(ev: Event)
-  {
-    this.stateService.scannerInputEnable.next((ev.target as HTMLInputElement).value === 'scanner')
+    if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(true)
   }
 
   async pcrPlateScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
-    if (this.pcrPlateId && (ev !== this.pcrPlateId))
+    if (this.pcrPlateId && ev !== this.pcrPlateId)
     {
-      alert(`PCR Plate id (${ev}) has already been scanned!`)
+      alert(`PCR Plate id (${ ev }) has already been scanned!`)
     }
     // Valid scan
     else
@@ -99,7 +97,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     try
     {
       // Get prc plates to verify
-      const res = await this.dbService.query(`SELECT pcr_plate_id FROM cltp.pcr_plate WHERE pcr_plate_id = '${pcrPlateId}'`)
+      const res = await this.dbService.query(`SELECT pcr_plate_id FROM cltp.pcr_plate WHERE pcr_plate_id = '${ pcrPlateId }'`)
 
       const [existingPlate] = (res as { recordset: Plate[] }).recordset
 
@@ -133,7 +131,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     // Do not scan duplicates
     else if (this.addedPlates.some((el) => el.plate.plate_id === ev))
     {
-      alert(`This plate id (${ev}) has already been scanned!`)
+      alert(`This plate id (${ ev }) has already been scanned!`)
     }
     // Valid scan
     else
@@ -154,7 +152,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     {
       if (this.addedPlates.some((el) => el.plate.plate_id === plateId))
       {
-        alert(`This plate id (${plateId}) is duplicate!`)
+        alert(`This plate id (${ plateId }) is duplicate!`)
         return
       }
 
@@ -162,7 +160,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       try
       {
         // Get plate to verify
-        const res = await this.dbService.query(`SELECT plate_id FROM cltp.plate WHERE plate_id = '${plateId}'`)
+        const res = await this.dbService.query(`SELECT plate_id FROM cltp.plate WHERE plate_id = '${ plateId }'`)
 
         const [existingPlate] = (res as { recordset: Plate[] }).recordset
 
@@ -184,7 +182,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       try
       {
         // Get pool rack mapping to verify
-        const res = await this.dbService.query(`SELECT * FROM cltp.connection_plate_pcr_plate WHERE plate_id = '${plateId}'`)
+        const res = await this.dbService.query(`SELECT * FROM cltp.connection_plate_pcr_plate WHERE plate_id = '${ plateId }'`)
 
         const [existingMapping] = (res as { recordset: unknown[] }).recordset
 
@@ -206,7 +204,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       this.addedPlates.push(
       {
         plate: { plate_id: plateId },
-        coordinate: this.matrix.y[this.indices.y] + this.matrix.x[this.indices.x]
+        coordinate: this.matrix.y[this.indices.y] + this.matrix.x[this.indices.x],
       })
       this.stateService.scanSucess.next()
       this.nextPlateId = undefined
@@ -229,7 +227,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
   done(): void
   {
     this.currentStep = 'done'
-    if (this.plateInputMode === 'scanner') this.stateService.scannerInputEnable.next(false)
+    if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
   async upload(): Promise<void>
@@ -238,14 +236,14 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     {
       const pcrPlate: PcrPlate =
       {
-        pcr_plate_id: this.pcrPlateId
+        pcr_plate_id: this.pcrPlateId,
       };
 
-      let q = `INSERT INTO cltp.pcr_plate (pcr_plate_id) VALUES ('${pcrPlate.pcr_plate_id}');`
+      let q = `INSERT INTO cltp.pcr_plate (pcr_plate_id) VALUES ('${ pcrPlate.pcr_plate_id }');`
 
-      for (let el of this.addedPlates)
+      for (const el of this.addedPlates)
       {
-        q += `INSERT INTO cltp.connection_plate_pcr_plate (pcr_plate_id, plate_id, coordinate) VALUES ('${pcrPlate.pcr_plate_id}','${el.plate.plate_id}','${el.coordinate}');`
+        q += `INSERT INTO cltp.connection_plate_pcr_plate (pcr_plate_id, plate_id, coordinate) VALUES ('${ pcrPlate.pcr_plate_id }','${ el.plate.plate_id }','${ el.coordinate }');`
       }
 
       try

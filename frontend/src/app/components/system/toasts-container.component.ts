@@ -25,5 +25,6 @@ export class ToastsContainerComponent implements OnDestroy
   isTemplate(toast: { textOrTpl: string | TemplateRef<unknown> }): boolean { return toast.textOrTpl instanceof TemplateRef; }
 
   castToastToString(toast: { textOrTpl: string | TemplateRef<unknown> }): string { return toast.textOrTpl as string; }
+
   castToastToTpl(toast: { textOrTpl: string | TemplateRef<unknown> }): TemplateRef<unknown> { return toast.textOrTpl as TemplateRef<unknown>; }
 }
