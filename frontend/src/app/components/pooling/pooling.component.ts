@@ -8,6 +8,8 @@ import { ToastsService } from 'src/app/services/toasts.service';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
+import { AuditLog } from 'src/app/interfaces/audit-log';
+import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 
 const steps = ["identify-pool", "scan-samples", "done"] as const
 type Step = typeof steps[number];
@@ -217,10 +219,31 @@ export class PoolingComponent implements OnDestroy
   {
     if (this.poolId && this.credentials)
     {
+      const actor = this.credentials?.username || 'anonymous'
+
       let q = `INSERT INTO cltp.pool (pool_id) VALUES ('${ this.poolId }');`
+
+      const auditLog: AuditLog =
+      {
+        type: 'create-pool',
+        ref: this.poolId,
+        actor: actor,
+        message: `Pool [${ this.poolId }] created by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
       for (const el of this.addedSamples)
       {
         q += `INSERT INTO cltp.connection_pool_sample (pool_id, sample_id, technician, source, comment) VALUES ('${ this.poolId }','${ el.sample_id }','${ this.credentials.username }','${ this.source || '' }','${ this.comment || '' }');`
+
+        const auditLog: AuditLog =
+        {
+          type: 'map-sample',
+          ref: el.sample_id,
+          actor: actor,
+          message: `Sample [${ el.sample_id }] mapped to Pool [${ this.poolId }] by [${ actor }]`,
+        }
+        q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
       }
 
       try

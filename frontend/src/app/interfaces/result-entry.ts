@@ -5,4 +5,5 @@ export interface ResultEntry
   coordinate: string;
   n1n2_cq?: number;
   human_ic_cq?: number;
+  creation_timestamp?: string;
 }

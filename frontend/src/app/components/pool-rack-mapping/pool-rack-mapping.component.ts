@@ -1,6 +1,7 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { AuditLog } from 'src/app/interfaces/audit-log';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { Pool } from 'src/app/interfaces/pool';
 import { PoolArrival } from 'src/app/interfaces/pool-arrival';
@@ -278,6 +279,8 @@ export class PoolRackMappingComponent implements OnDestroy
   {
     if (this.rackId && this.rackI !== undefined)
     {
+      const actor = this.credentials?.username || 'anonymous'
+
       const rack: Rack =
       {
         rack_id: this.rackId,
@@ -286,9 +289,27 @@ export class PoolRackMappingComponent implements OnDestroy
 
       let q = `INSERT INTO cltp.rack (rack_id, i) VALUES ('${ rack.rack_id }',${ rack.i });`
 
+      const auditLog: AuditLog =
+      {
+        type: 'create-rack',
+        ref: rack.rack_id,
+        actor: actor,
+        message: `Rack [${ rack.rack_id }] created by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
+
       for (const el of this.addedPools)
       {
         q += `INSERT INTO cltp.connection_pool_rack (rack_id, rack_i, pool_id, coordinate) VALUES ('${ rack.rack_id }',${ rack.i },'${ el.pool.pool_id }','${ el.coordinate }');`
+        const auditLog: AuditLog =
+        {
+          type: 'map-pool',
+          ref: el.pool.pool_id,
+          actor: actor,
+          message: `Pool [${ el.pool.pool_id }] mapped to Rack [${ rack.rack_id }] by [${ actor }]`,
+        }
+        q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
       }
 
       try
@@ -349,10 +370,21 @@ export class PoolRackMappingComponent implements OnDestroy
       pool_id: poolId,
     };
 
-    const q = `
+    const actor = this.credentials?.username || 'anonymous'
+
+    let q = `
     INSERT INTO cltp.pool (pool_id) VALUES ('${ pool.pool_id }');
-    INSERT INTO cltp.pool_arrival (${ Object.keys(poolArrival).join(',') }) VALUES (${ Object.values(poolArrival).map(sqlValueFormatter).join(',') });
-    `
+    INSERT INTO cltp.pool_arrival (${ Object.keys(poolArrival).join(',') }) VALUES (${ Object.values(poolArrival).map(sqlValueFormatter).join(',') });`
+
+    const auditLog: AuditLog =
+    {
+      type: 'register-pool',
+      ref: pool.pool_id,
+      actor: actor,
+      message: `Pool [${ pool.pool_id }] created and registered by [${ actor }]`,
+    }
+    q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
 
     try
     {

@@ -6,6 +6,8 @@ import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { StateService } from 'src/app/services/state.service';
 import { DBService } from 'src/app/services/db.service';
+import { AuditLog } from 'src/app/interfaces/audit-log';
+import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 
 
 @Component({
@@ -88,9 +90,17 @@ export class SystemPopupsComponent implements OnDestroy, OnInit
       if (!this.staffId) throw new Error("Staff is undefined");
       if (!this.sampleId) throw new Error("Sample is undefined");
 
-      console.log(this.staffId, this.sampleId)
+      let q = `INSERT INTO cltp.sample (sample_id, staff_id) VALUES ('${ this.sampleId }','${ this.staffId }');`
 
-      const q = `INSERT INTO cltp.sample (sample_id, staff_id) VALUES ('${ this.sampleId }','${ this.staffId }');`
+      const auditLog: AuditLog =
+      {
+        type: 'register-sample',
+        ref: this.sampleId,
+        actor: 'anonymous',
+        message: `Sample [${ this.sampleId }] registered for Staff [${ this.staffId }] by [anonymous]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
 
       try
       {

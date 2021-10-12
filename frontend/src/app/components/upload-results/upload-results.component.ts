@@ -12,6 +12,9 @@ import map_transform_rack_to_plate from 'src/assets/map_transform_rack_to_plate.
 import map_transform_plate_to_pcr_plate from 'src/assets/map_transform_plate_to_pcr_plate.json'
 import { sqlValueFormatter } from '../../helpers/sql-value-formatter';
 import { ToastsService } from 'src/app/services/toasts.service';
+import { ConfigService } from 'src/app/services/config.service';
+import { Credentials } from 'src/app/interfaces/credentials';
+import { AuditLog } from 'src/app/interfaces/audit-log';
 
 const NEG_CONTROL_COORDINATE = "C24"
 const POS_CONTROL_COORDINATE = "P24"
@@ -57,6 +60,8 @@ interface ResultData
 })
 export class UploadResultsComponent implements OnDestroy
 {
+  credentials?: Credentials;
+
   N = N
 
   M = M
@@ -89,8 +94,10 @@ export class UploadResultsComponent implements OnDestroy
     public dbService: DBService,
     public stateService: StateService,
     public toastsService: ToastsService,
+    public configService: ConfigService,
   )
   {
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.scannerEnabled)).subscribe((input) =>
     {
       this.stateService.scanSucess.next()
@@ -368,19 +375,55 @@ export class UploadResultsComponent implements OnDestroy
   {
     if (!this.resultData) throw new Error("Result data not available")
 
+    const actor = this.credentials?.username || 'anonymous'
+
     // Create the result
-    const q = [`INSERT INTO cltp.result (${ Object.keys(this.resultData.result).join(',') }) VALUES (${ Object.values(this.resultData.result).map(sqlValueFormatter).join(',') });`]
+    let q = `INSERT INTO cltp.result (${ Object.keys(this.resultData.result).join(',') }) VALUES (${ Object.values(this.resultData.result).map(sqlValueFormatter).join(',') });`
+
+    const auditLog: AuditLog =
+    {
+      type: 'upload-result',
+      ref: this.resultData.result.id,
+      actor: actor,
+      message: `Result [${ this.resultData.result.id }] uploaded by [${ actor }]`,
+    }
+    q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
 
     // Create all results
-    for (const entry of this.resultData.resultEntries.filter((entry) => this.resultData?.interpretations.some((inter) => entry.id === inter.result_entry_id))) q.push(`INSERT INTO cltp.result_entry (${ Object.keys(entry).join(',') }) VALUES (${ Object.values(entry).map(sqlValueFormatter).join(',') });`)
+    for (const entry of this.resultData.resultEntries.filter((entry) => this.resultData?.interpretations.some((inter) => entry.id === inter.result_entry_id)))
+    {
+      q += `INSERT INTO cltp.result_entry (${ Object.keys(entry).join(',') }) VALUES (${ Object.values(entry).map(sqlValueFormatter).join(',') });`
+
+      const auditLog: AuditLog =
+      {
+        type: 'upload-result-entry',
+        ref: entry.id,
+        actor: actor,
+        message: `Result Entry [${ this.resultData.result.id }] of Result [${ this.resultData.result.id }] uploaded by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+    }
 
     // Create all interpretations
-    for (const entry of this.resultData.interpretations) q.push(`INSERT INTO cltp.interpretation (${ Object.keys(entry).join(',') }) VALUES (${ Object.values(entry).map(sqlValueFormatter).join(',') });`)
+    for (const entry of this.resultData.interpretations)
+    {
+      q += `INSERT INTO cltp.interpretation (${ Object.keys(entry).join(',') }) VALUES (${ Object.values(entry).map(sqlValueFormatter).join(',') });`
+
+      const auditLog: AuditLog =
+      {
+        type: 'upload-interpretation',
+        ref: entry.id,
+        actor: actor,
+        message: `Interpretation [${ entry.id }] of Result Entry [${ entry.result_entry_id }] uploaded for Pool [${ entry.pool_id }] by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+    }
 
 
     try
     {
-      await this.dbService.query(q.join(""))
+      await this.dbService.query(q)
 
       this.toastsService.show(`Results for PCR Plate '${ this.pcrPlateId }' successfully inserted into the database`, { classname: 'bg-success text-light' })
     }

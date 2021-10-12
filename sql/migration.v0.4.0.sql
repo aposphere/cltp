@@ -244,3 +244,15 @@ ALTER VIEW [cltp].[unused_rack] AS SELECT cltp.rack.rack_id,
    FROM (cltp.rack
      LEFT JOIN cltp.connection_rack_plate ON ((((cltp.rack.rack_id) = (cltp.connection_rack_plate.rack_id)) AND (cltp.rack.i = cltp.connection_rack_plate.rack_i))))
   WHERE (cltp.connection_rack_plate.plate_id IS NULL);
+
+
+CREATE TABLE [cltp].[audit_log] (
+  [id] bigint IDENTITY NOT NULL,
+  [type] varchar(64) NOT NULL,
+  [ref] varchar(64) NOT NULL,
+  [actor] varchar(64) NOT NULL,
+  [message] varchar(max) NOT NULL,
+  [creation_timestamp] datetime DEFAULT getdate() NOT NULL,
+  PRIMARY KEY CLUSTERED ([id])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+)

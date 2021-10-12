@@ -9,6 +9,10 @@ import { InterpretationExported } from 'src/app/interfaces/interpretation_export
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 import { Interpretation } from 'src/app/interfaces/interpretation';
 import moment from 'moment';
+import { AuditLog } from 'src/app/interfaces/audit-log';
+import { Credentials } from 'src/app/interfaces/credentials';
+import { takeUntil } from 'rxjs/operators';
+import { ConfigService } from 'src/app/services/config.service';
 
 interface ProbeResult
 {
@@ -24,6 +28,8 @@ interface ProbeResult
 export class DownloadProbeResultsComponent implements OnDestroy
 {
   active = 1
+
+  credentials?: Credentials
 
   pendingInterpretations: Interpretation[] = []
 
@@ -41,8 +47,11 @@ export class DownloadProbeResultsComponent implements OnDestroy
     public dbService: DBService,
     public stateService: StateService,
     public toastsService: ToastsService,
+    public configService: ConfigService,
   )
   {
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
+
     this.loadProbeResults()
     this.loadInternalProbeResults()
     this.loadPendingInterpretations()
@@ -149,10 +158,24 @@ export class DownloadProbeResultsComponent implements OnDestroy
 
     let q = ""
 
+    const actor = this.credentials?.username || 'anonymous'
+
     for (const pendingInterpretation of this.pendingInterpretations)
     {
-      const interpretationExported: InterpretationExported = { id: v4(), interpretation_id: pendingInterpretation.id }
+      const interpretationExported: InterpretationExported =
+      {
+        id: v4(),
+        interpretation_id: pendingInterpretation.id,
+      }
       q += `INSERT INTO cltp.interpretation_exported (${ Object.keys(interpretationExported).join(',') }) VALUES (${ Object.values(interpretationExported).map(sqlValueFormatter).join(',') });`
+      const auditLog: AuditLog =
+      {
+        type: 'export-interpretation',
+        ref: interpretationExported.id,
+        actor: actor,
+        message: `Interpretation [${ pendingInterpretation.id }] exported as [${ interpretationExported.id }] by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
     }
 
     try

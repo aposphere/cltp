@@ -5,4 +5,5 @@ export interface PoolArrival
   technician: string;
   comment: string;
   source: string;
+  creation_timestamp?: string;
 }

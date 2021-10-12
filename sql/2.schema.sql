@@ -12,8 +12,29 @@
  Target Server Version : 15004178
  File Encoding         : 65001
 
- Date: 11/10/2021 17:13:31
+ Date: 12/10/2021 09:44:26
 */
+
+
+-- ----------------------------
+-- Table structure for audit_log
+-- ----------------------------
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[audit_log]') AND type IN ('U'))
+	DROP TABLE [cltp].[audit_log]
+GO
+
+CREATE TABLE [cltp].[audit_log] (
+  [id] bigint  IDENTITY(1,1) NOT NULL,
+  [type] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [ref] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [actor] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [message] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [creation_timestamp] datetime DEFAULT getdate() NOT NULL
+)
+GO
+
+ALTER TABLE [cltp].[audit_log] SET (LOCK_ESCALATION = TABLE)
+GO
 
 
 -- ----------------------------
@@ -575,6 +596,22 @@ CREATE VIEW [cltp].[unused_rack] AS SELECT cltp.rack.rack_id,
    FROM (cltp.rack
      LEFT JOIN cltp.connection_rack_plate ON ((((cltp.rack.rack_id) = (cltp.connection_rack_plate.rack_id)) AND (cltp.rack.i = cltp.connection_rack_plate.rack_i))))
   WHERE (cltp.connection_rack_plate.plate_id IS NULL);
+GO
+
+
+-- ----------------------------
+-- Auto increment value for audit_log
+-- ----------------------------
+DBCC CHECKIDENT ('[cltp].[audit_log]', RESEED, 16)
+GO
+
+
+-- ----------------------------
+-- Primary Key structure for table audit_log
+-- ----------------------------
+ALTER TABLE [cltp].[audit_log] ADD CONSTRAINT [PK__audit_lo__3213E83F8DCCB61A] PRIMARY KEY CLUSTERED ([id])
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+ON [PRIMARY]
 GO
 
 

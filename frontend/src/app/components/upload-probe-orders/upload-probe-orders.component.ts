@@ -1,7 +1,11 @@
 import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
+import { AuditLog } from 'src/app/interfaces/audit-log';
+import { Credentials } from 'src/app/interfaces/credentials';
 import { ProbeOrder, ProbeOrderJSON } from 'src/app/interfaces/probe-order';
+import { ConfigService } from 'src/app/services/config.service';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
@@ -17,6 +21,8 @@ import { sqlValueFormatter } from '../../helpers/sql-value-formatter';
 })
 export class UploadProbeOrdersComponent implements OnDestroy
 {
+  credentials?: Credentials;
+
   active = 1
 
   form = new FormGroup(
@@ -35,8 +41,10 @@ export class UploadProbeOrdersComponent implements OnDestroy
     public dbService: DBService,
     public stateService: StateService,
     public toastsService: ToastsService,
+    public configService: ConfigService,
   )
   {
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
   }
 
   filesChanged(ev: Event): void
@@ -93,15 +101,29 @@ export class UploadProbeOrdersComponent implements OnDestroy
 
   async uploadOrders(): Promise<void>
   {
-    const q = []
+    let q = ""
 
-    for (const entry of this.uploadedOrders) q.push(`INSERT INTO cltp.probe_order (${ Object.keys(entry).join(',') }) VALUES (${ Object.values(entry).map(sqlValueFormatter).join(',') });`)
+    const actor = this.credentials?.username || 'anonymous'
+
+    for (const entry of this.uploadedOrders)
+    {
+      q += `INSERT INTO cltp.probe_order (${ Object.keys(entry).join(',') }) VALUES (${ Object.values(entry).map(sqlValueFormatter).join(',') });`
+
+      const auditLog: AuditLog =
+      {
+        type: 'upload-probe-order',
+        ref: entry.id,
+        actor: actor,
+        message: `Probe Order [${ entry.id }] uploaded for Pool [${ entry.barcode_nummer }] by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+    }
 
     try
     {
-      await this.dbService.query(q.join(""))
+      await this.dbService.query(q)
 
-      this.toastsService.show(`${ q.length } Probe Orders successfully inserted into the database`, { classname: 'bg-success text-light' })
+      this.toastsService.show(`${ this.uploadedOrders } Probe Orders successfully inserted into the database`, { classname: 'bg-success text-light' })
     }
     catch (e)
     {

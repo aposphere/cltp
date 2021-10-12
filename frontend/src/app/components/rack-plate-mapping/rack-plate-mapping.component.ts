@@ -1,8 +1,12 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
+import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
+import { AuditLog } from 'src/app/interfaces/audit-log';
+import { Credentials } from 'src/app/interfaces/credentials';
 import { Plate } from 'src/app/interfaces/plate';
 import { Rack } from 'src/app/interfaces/rack';
+import { ConfigService } from 'src/app/services/config.service';
 import { DBService } from 'src/app/services/db.service';
 import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
@@ -18,6 +22,8 @@ type Step = typeof steps[number];
 })
 export class RackPlateMappingComponent implements OnDestroy
 {
+  credentials?: Credentials;
+
   matrix =
   {
     x: ["1", "2", "3", "4"],
@@ -47,8 +53,10 @@ export class RackPlateMappingComponent implements OnDestroy
     public dbService: DBService,
     public stateService: StateService,
     public toastsService: ToastsService,
+    public configService: ConfigService,
   )
   {
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
     this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
     {
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-plate" || this.currentStep === "scan-racks")) this.stateService.scannerInputEnable.next(false)
@@ -256,6 +264,8 @@ export class RackPlateMappingComponent implements OnDestroy
   {
     if (this.plateId)
     {
+      const actor = this.credentials?.username || 'anonymous'
+
       const plate: Plate =
       {
         plate_id: this.plateId,
@@ -263,9 +273,26 @@ export class RackPlateMappingComponent implements OnDestroy
 
       let q = `INSERT INTO cltp.plate (plate_id) VALUES ('${ plate.plate_id }');`
 
+      const auditLog: AuditLog =
+      {
+        type: 'create-plate',
+        ref: plate.plate_id,
+        actor: actor,
+        message: `Plate [${ plate.plate_id }] created by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
       for (const el of this.addedRacks)
       {
         q += `INSERT INTO cltp.connection_rack_plate (plate_id, rack_id, rack_i, coordinate) VALUES ('${ plate.plate_id }','${ el.rack.rack_id }','${ el.rack.i }','${ el.coordinate }');`
+        const auditLog: AuditLog =
+        {
+          type: 'map-rack',
+          ref: el.rack.rack_id,
+          actor: actor,
+          message: `Rack [${ el.rack.rack_id }] mapped to Plate [${ plate.plate_id }] by [${ actor }]`,
+        }
+        q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
       }
 
       try

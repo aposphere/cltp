@@ -2,6 +2,7 @@ export interface ProbeOrder extends ProbeOrderJSON
 {
   id: string;
   comment: string;
+  creation_timestamp?: string;
 }
 
 export interface ProbeOrderJSON

@@ -6,6 +6,10 @@ import { DBService } from 'src/app/services/db.service';
 import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { filter, takeUntil } from 'rxjs/operators';
+import { ConfigService } from 'src/app/services/config.service';
+import { Credentials } from 'src/app/interfaces/credentials';
+import { AuditLog } from 'src/app/interfaces/audit-log';
+import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 
 const steps = ["identify-pcr-plate", "scan-plates", "done"] as const
 type Step = typeof steps[number];
@@ -26,6 +30,8 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
   plateLimit = this.matrix.x.length * this.matrix.y.length
 
+  credentials?: Credentials
+
   currentStep?: Step = undefined
 
   indices: { x: number, y: number } = { x: 0, y: 0 }
@@ -45,8 +51,11 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     public dbService: DBService,
     public stateService: StateService,
     public toastsService: ToastsService,
+    public configService: ConfigService,
   )
   {
+    this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
+
     this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
     {
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-pcr-plate" || this.currentStep === "scan-plates")) this.stateService.scannerInputEnable.next(false)
@@ -234,6 +243,8 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
   {
     if (this.pcrPlateId)
     {
+      const actor = this.credentials?.username || 'anonymous'
+
       const pcrPlate: PcrPlate =
       {
         pcr_plate_id: this.pcrPlateId,
@@ -241,9 +252,28 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
       let q = `INSERT INTO cltp.pcr_plate (pcr_plate_id) VALUES ('${ pcrPlate.pcr_plate_id }');`
 
+      const auditLog: AuditLog =
+      {
+        type: 'create-pcr-plate',
+        ref: pcrPlate.pcr_plate_id,
+        actor: actor,
+        message: `PCR Plate [${ pcrPlate.pcr_plate_id }] create by [${ actor }]`,
+      }
+      q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
+
+
       for (const el of this.addedPlates)
       {
         q += `INSERT INTO cltp.connection_plate_pcr_plate (pcr_plate_id, plate_id, coordinate) VALUES ('${ pcrPlate.pcr_plate_id }','${ el.plate.plate_id }','${ el.coordinate }');`
+
+        const auditLog: AuditLog =
+        {
+          type: 'map-plate',
+          ref: el.plate.plate_id,
+          actor: actor,
+          message: `Plate [${ el.plate.plate_id }] mapped to PCR Plate [${ pcrPlate.pcr_plate_id }] by [${ actor }]`,
+        }
+        q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
       }
 
       try
