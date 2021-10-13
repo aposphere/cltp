@@ -1,7 +1,10 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
-import { ProbeOrderJSON } from 'src/app/interfaces/probe-order';
+import { ProbeOrderJSON } from 'src/app/interfaces/probe-order.table';
 
-export function probeOrderValidator(): ValidatorFn
+/**
+ * Validator for a json text input to be a probe order
+ */
+ export function probeOrderValidator(): ValidatorFn
 {
   return (control: AbstractControl): ValidationErrors | null =>
   {

@@ -1,6 +1,9 @@
 import { Injectable, TemplateRef } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
+/**
+ * A toast to display
+ */
 export interface Toast
 {
   /** The string or template to show */
@@ -20,8 +23,10 @@ export class ToastsService
   // The list of toasts
   public readonly toasts: Toast[] = [];
 
+  // A toast subject
   private readonly _toast: Subject<Toast> = new Subject<Toast>();
 
+  // A toast observable
   public toast$: Observable<Toast> = this._toast.asObservable();
 
   /**

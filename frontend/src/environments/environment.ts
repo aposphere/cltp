@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   backend: 'http://cltp.ll:8081',
+  servicePassword: 'cltp',
 };
 
 /*

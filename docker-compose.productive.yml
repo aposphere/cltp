@@ -1,0 +1,40 @@
+version: '3.7'
+
+services:
+  cltp-backend-proxy:
+    container_name: cltp-backend-proxy
+    image: cltp-backend-proxy:latest
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    environment:
+      ENDPOINT: https://cltp.ll
+      PORT: 8080
+      MSSQL_ENDPOINT: db # Provide the DB endpoint
+      MSSQL_PORT: 1433 # Provide the DB port
+      MSSQL_DATABASE: test0 # Provide the DB database
+      FRONTEND_ENDPOINT: https://cltp.ll
+      FRONTEND_PORT: 80
+      SERVICE_PASSWORD: cltp
+    networks:
+      - app-network
+    depends_on:
+      - db
+  cltp-frontend:
+    container_name: cltp-frontend
+    image: cltp-frontend:latest
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "80:80"
+      - "443:443"
+    networks:
+      - app-network
+    depends_on:
+      - cltp-backend-proxy
+    volumes:
+      - ./proxy/certs:/etc/nginx/certs # Replace the host path with the path to the cert files instead of the examples
+networks:
+  app-network:
+    driver: bridge

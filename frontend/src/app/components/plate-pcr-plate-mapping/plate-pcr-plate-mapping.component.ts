@@ -1,17 +1,19 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { Plate } from 'src/app/interfaces/plate';
-import { PcrPlate } from 'src/app/interfaces/pcr-plate';
+import { Plate } from 'src/app/interfaces/plate.table';
+import { PcrPlate } from 'src/app/interfaces/pcr-plate.table';
 import { DBService } from 'src/app/services/db.service';
 import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
-import { AuditLog } from 'src/app/interfaces/audit-log';
+import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 
+/** Workflow steps */
 const steps = ["identify-pcr-plate", "scan-plates", "done"] as const
+/** Workflow step type */
 type Step = typeof steps[number];
 
 
@@ -22,28 +24,36 @@ type Step = typeof steps[number];
 })
 export class PlatePcrPlateMappingComponent implements OnDestroy
 {
+  /** The user credentials */
+  credentials?: Credentials
+
+  /** The matrix */
   matrix =
   {
     x: ["1", "2"],
     y: ["A", "B"],
   }
 
+  /** The plate limit */
   plateLimit = this.matrix.x.length * this.matrix.y.length
 
-  credentials?: Credentials
-
+  /** The current workflow step */
   currentStep?: Step = undefined
 
+  /** The matrix indices */
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
+  /** The selected input device */
   inputDevice: InputDevice = "scanner"
 
+  /** The pcr plate id */
   pcrPlateId?: string
 
+  /** The next plate id */
   nextPlateId?: string
 
+  /** The added plates */
   addedPlates: { plate: Plate, coordinate: string }[] = []
-
 
   unsubscribe$ = new Subject<void>();
 
@@ -58,12 +68,15 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
 
     this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
     {
+      // Disable the scanner if necessary
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-pcr-plate" || this.currentStep === "scan-plates")) this.stateService.scannerInputEnable.next(false)
       this.inputDevice = inputDevice
+      // Enable the scanner if necessary
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-pcr-plate" || this.currentStep === "scan-plates")) this.stateService.scannerInputEnable.next(true)
     });
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pcr-plate' &&  this.inputDevice === 'scanner')).subscribe(async (input) =>
     {
+      // Receive the scanner input
       this.stateService.scanSucess.next()
       await this.checkPcrPlate(input)
       if (this.inputDevice !== 'scanner') this.stateService.scannerInputEnable.next(false)
@@ -71,6 +84,9 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-plates' && this.inputDevice === 'scanner')).subscribe((input) => this.plateScanSuccessHandler(input))
   }
 
+  /**
+   * Reset the complete workflow
+   */
   reset(): void
   {
     this.currentStep = undefined
@@ -80,12 +96,18 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     this.addedPlates = []
   }
 
-  start(): void
+  /**
+   * Start the workflow
+   */
+   start(): void
   {
     this.currentStep = 'identify-pcr-plate'
     if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(true)
   }
 
+  /**
+   * Success handler for the scanner
+   */
   async pcrPlateScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
@@ -100,6 +122,9 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Check the pcr plate
+   */
   async checkPcrPlate(pcrPlateId: string): Promise<void>
   {
     // Make sure a prc plate is used only ONCE
@@ -125,11 +150,15 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     }
 
 
+    // Save pcr plate id and go to next step
     this.pcrPlateId = pcrPlateId
     this.currentStep = 'scan-plates'
   }
 
 
+  /**
+   * Success handler for the scanner
+   */
   plateScanSuccessHandler(ev: string): void
   {
     // Ignore last one
@@ -149,16 +178,23 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Error handler for the scanner
+   */
   scanErrorHandler(ev: unknown): void
   {
     console.error("SCAN ERROR")
     console.error(ev)
   }
 
+  /**
+   * Manually add next palte
+   */
   async manualNextPlateId(plateId?: string): Promise<void>
   {
     if (plateId)
     {
+      // Check duplicates
       if (this.addedPlates.some((el) => el.plate.plate_id === plateId))
       {
         alert(`This plate id (${ plateId }) is duplicate!`)
@@ -210,11 +246,13 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       }
 
 
+      // Add plates
       this.addedPlates.push(
       {
         plate: { plate_id: plateId },
         coordinate: this.matrix.y[this.indices.y] + this.matrix.x[this.indices.x],
       })
+      // Flash
       this.stateService.scanSucess.next()
       this.nextPlateId = undefined
 
@@ -233,18 +271,26 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Complete the workflow
+   */
   done(): void
   {
     this.currentStep = 'done'
     if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
+  /**
+   * Upload the workflow results
+   */
   async upload(): Promise<void>
   {
     if (this.pcrPlateId)
     {
+      // Get actor
       const actor = this.credentials?.username || 'anonymous'
 
+      // Create pcr palte
       const pcrPlate: PcrPlate =
       {
         pcr_plate_id: this.pcrPlateId,
@@ -262,6 +308,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
 
 
+      // Add plates
       for (const el of this.addedPlates)
       {
         q += `INSERT INTO cltp.connection_plate_pcr_plate (pcr_plate_id, plate_id, coordinate) VALUES ('${ pcrPlate.pcr_plate_id }','${ el.plate.plate_id }','${ el.coordinate }');`
@@ -290,6 +337,7 @@ export class PlatePcrPlateMappingComponent implements OnDestroy
       }
     }
 
+    // Reset the workflow
     this.reset()
   }
 

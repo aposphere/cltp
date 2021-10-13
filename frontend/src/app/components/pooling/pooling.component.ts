@@ -1,17 +1,19 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { Sample } from 'src/app/interfaces/sample';
-import { Pool } from 'src/app/interfaces/pool';
+import { Sample } from 'src/app/interfaces/sample.table';
+import { Pool } from 'src/app/interfaces/pool.table';
 import { DBService } from 'src/app/services/db.service';
 import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { filter, takeUntil } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
-import { AuditLog } from 'src/app/interfaces/audit-log';
+import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 
+/** Workflow steps */
 const steps = ["identify-pool", "scan-samples", "done"] as const
+/** Workflow step tyle */
 type Step = typeof steps[number];
 
 
@@ -22,20 +24,28 @@ type Step = typeof steps[number];
 })
 export class PoolingComponent implements OnDestroy
 {
+  /** The user credentials */
   credentials?: Credentials;
 
+  /** The current workflow step */
   currentStep?: Step = undefined
 
+  /** The selected input device */
   inputDevice: InputDevice = "scanner"
 
+  /** The pool id */
   poolId?: string
 
+  /** The next sample id */
   nextSampleId?: string
 
+  /** The added samples */
   addedSamples: { sample_id: string }[] = []
 
+  /** The source of the pooling */
   source?: string
 
+  /** The comment of the pooling */
   comment?: string
 
   unsubscribe$ = new Subject<void>();
@@ -49,13 +59,16 @@ export class PoolingComponent implements OnDestroy
   {
     this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
     {
+      // Disable the scanner if necessary
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-pool" || this.currentStep === "scan-samples")) this.stateService.scannerInputEnable.next(false)
       this.inputDevice = inputDevice
+      // Enable the scanner if necessary
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-pool" || this.currentStep === "scan-samples")) this.stateService.scannerInputEnable.next(true)
     });
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-pool' &&  this.inputDevice === 'scanner')).subscribe(async (input) =>
     {
+      // Receive the scanner input
       this.stateService.scanSucess.next()
       await this.checkPool(input)
       if (this.inputDevice !== 'scanner') this.stateService.scannerInputEnable.next(false)
@@ -63,6 +76,9 @@ export class PoolingComponent implements OnDestroy
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-samples' && this.inputDevice === 'scanner')).subscribe((input) => this.sampleScanSuccessHandler(input))
   }
 
+  /**
+   * Reset the complete workflow
+   */
   reset(): void
   {
     this.currentStep = undefined
@@ -73,12 +89,18 @@ export class PoolingComponent implements OnDestroy
     this.comment = undefined
   }
 
+  /**
+   * Start the workflow
+   */
   start(): void
   {
     this.currentStep = 'identify-pool'
     if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(true)
   }
 
+  /**
+   * Success handler for the scanner
+   */
   async poolScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
@@ -93,6 +115,9 @@ export class PoolingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Check the pool
+   */
   async checkPool(poolId: string): Promise<void>
   {
     // Make sure a pool is used only ONCE
@@ -118,11 +143,15 @@ export class PoolingComponent implements OnDestroy
     }
 
 
+    // Save pool id and go to next step
     this.poolId = poolId
     this.currentStep = 'scan-samples'
   }
 
 
+  /**
+   * Success handler for the scanner
+   */
   sampleScanSuccessHandler(ev: string): void
   {
     // Ignore last one
@@ -142,16 +171,23 @@ export class PoolingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Error handler for the scanner
+   */
   scanErrorHandler(ev: unknown): void
   {
     console.error("SCAN ERROR")
     console.error(ev)
   }
 
+  /**
+   * Manual add next sample
+   */
   async manualNextSampleId(sampleId?: string): Promise<void>
   {
     if (sampleId)
     {
+      // Check duplicates
       if (this.addedSamples.some((el) => el.sample_id === sampleId))
       {
         alert(`This sample id (${ sampleId }) is duplicate!`)
@@ -203,24 +239,33 @@ export class PoolingComponent implements OnDestroy
       }
 
 
+      // Add samples and flash
       this.addedSamples.push({ sample_id: sampleId })
       this.stateService.scanSucess.next()
       this.nextSampleId = undefined
     }
   }
 
+  /**
+   * Complete the workflow
+   */
   done(): void
   {
     this.currentStep = 'done'
     if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(false)
   }
 
+  /**
+   * Upload the results of the workflow
+   */
   async upload(): Promise<void>
   {
     if (this.poolId && this.credentials)
     {
+      // Get the actor
       const actor = this.credentials?.username || 'anonymous'
 
+      // Create the pool
       let q = `INSERT INTO cltp.pool (pool_id) VALUES ('${ this.poolId }');`
 
       const auditLog: AuditLog =
@@ -232,6 +277,7 @@ export class PoolingComponent implements OnDestroy
       }
       q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
 
+      // Add the samples
       for (const el of this.addedSamples)
       {
         q += `INSERT INTO cltp.connection_pool_sample (pool_id, sample_id, technician, source, comment) VALUES ('${ this.poolId }','${ el.sample_id }','${ this.credentials.username }','${ this.source || '' }','${ this.comment || '' }');`
@@ -260,6 +306,7 @@ export class PoolingComponent implements OnDestroy
       }
     }
 
+    // Reset the workflow
     this.reset()
   }
 

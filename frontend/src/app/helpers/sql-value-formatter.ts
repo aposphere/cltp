@@ -1,4 +1,7 @@
-export function sqlValueFormatter(v: unknown): string
+/**
+ * Minimal escape function for sql values
+ */
+ export function sqlValueFormatter(v: unknown): string
 {
   if (v === undefined || v === null) return "NULL"
   else if (typeof v === "string") return `'${ v }'`

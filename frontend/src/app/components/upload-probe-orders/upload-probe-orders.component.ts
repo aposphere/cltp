@@ -2,9 +2,9 @@ import { Component, OnDestroy } from '@angular/core';
 import { FormControl, FormGroup, Validators } from '@angular/forms';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
-import { AuditLog } from 'src/app/interfaces/audit-log';
+import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { Credentials } from 'src/app/interfaces/credentials';
-import { ProbeOrder, ProbeOrderJSON } from 'src/app/interfaces/probe-order';
+import { ProbeOrder, ProbeOrderJSON } from 'src/app/interfaces/probe-order.table';
 import { ConfigService } from 'src/app/services/config.service';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
@@ -21,18 +21,23 @@ import { sqlValueFormatter } from '../../helpers/sql-value-formatter';
 })
 export class UploadProbeOrdersComponent implements OnDestroy
 {
+  /** The user credentials */
   credentials?: Credentials;
 
+  /** Active tab */
   active = 1
 
+  /** The form */
   form = new FormGroup(
   {
     comment: new FormControl(''),
     data: new FormControl('', Validators.compose([jsonValidator(), probeOrderValidator()])),
   });
 
+  /** The files */
   files?: File[]
 
+  /** The uploaded orders from the json */
   uploadedOrders: ProbeOrder[] = []
 
   unsubscribe$ = new Subject<void>();
@@ -47,27 +52,39 @@ export class UploadProbeOrdersComponent implements OnDestroy
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
   }
 
+  /**
+   * Event listener for new files
+   */
   filesChanged(ev: Event): void
   {
+    // Check the files
     const t = ev.target as HTMLInputElement
     if (t.files && t.files[0])
     {
+      // Save the files
       this.files = Array.from(t.files)
 
+      // Parse the files
       this.parseFiles()
     }
     else throw new Error("File or file list is undefined")
   }
 
+  /**
+   * Parse the files
+   */
   parseFiles(): void
   {
     if (!this.files) throw new Error("No files specified")
 
     this.uploadedOrders = []
 
+    // Read all files
     for (const file of this.files)
     {
+      // Use the FileReader to get the content
       const fileReader = new FileReader()
+      // Wait for the file to be ready
       fileReader.onload = (_e) =>
       {
         console.info("File loaded", file, fileReader.result)
@@ -99,10 +116,14 @@ export class UploadProbeOrdersComponent implements OnDestroy
   }
 
 
+  /**
+   * Upload the probe orders
+   */
   async uploadOrders(): Promise<void>
   {
     let q = ""
 
+    // Get the actor
     const actor = this.credentials?.username || 'anonymous'
 
     for (const entry of this.uploadedOrders)
@@ -132,6 +153,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
       return
     }
 
+    // Reset
     this.form.reset()
     this.files = undefined
     this.uploadedOrders = []

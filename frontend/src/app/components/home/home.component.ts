@@ -12,18 +12,25 @@ interface CountSQLResponse { __COUNT: string }
 })
 export class HomeComponent implements OnDestroy
 {
+  /** Number of samples ready */
   samplesReady?: number
 
+  /** Number of pools ready */
   poolsReady?: number
 
+  /** Number of probe orders ready */
   probeOrdersReady?: number
 
+  /** Number of racks ready */
   racksReady?: number
 
+  /** Number of plates ready */
   platesReady?: number
 
+  /** Number of pcr plates ready */
   pcrPlatesReady?: number
 
+  /** Number of interpretations pending to download */
   interpretationsPending?: number
 
   unsubscribe$ = new Subject<void>();
@@ -42,6 +49,9 @@ export class HomeComponent implements OnDestroy
     this.loadInterpretationPending()
   }
 
+  /**
+   * Load ready samples
+   */
   async loadReadySamples(): Promise<void>
   {
     let count;
@@ -62,6 +72,9 @@ export class HomeComponent implements OnDestroy
   }
 
 
+  /**
+   * Load ready pools
+   */
   async loadReadyPools(): Promise<void>
   {
     let count;
@@ -82,6 +95,9 @@ export class HomeComponent implements OnDestroy
   }
 
 
+  /**
+   * Load ready probe orders
+   */
   async loadReadyProbeOrders(): Promise<void>
   {
     let count;
@@ -101,6 +117,9 @@ export class HomeComponent implements OnDestroy
     this.probeOrdersReady = count
   }
 
+  /**
+   * Load ready racks
+   */
   async loadReadyRacks(): Promise<void>
   {
     let count;
@@ -120,6 +139,9 @@ export class HomeComponent implements OnDestroy
     this.racksReady = count
   }
 
+  /**
+   * Load ready plates
+   */
   async loadReadyPlates(): Promise<void>
   {
     let count;
@@ -139,6 +161,9 @@ export class HomeComponent implements OnDestroy
     this.platesReady = count
   }
 
+  /**
+   * Load ready pcr plates
+   */
   async loadReadyPcrPlate(): Promise<void>
   {
     let count;
@@ -159,6 +184,9 @@ export class HomeComponent implements OnDestroy
   }
 
 
+  /**
+   * Load pending interpretations
+   */
   async loadInterpretationPending(): Promise<void>
   {
     let count;

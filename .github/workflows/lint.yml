@@ -1,0 +1,49 @@
+name: Lint
+
+on: [push]
+
+jobs:
+  info:
+    name: Info
+
+    timeout-minutes: 15
+
+    runs-on: ubuntu-latest
+
+    container: node:12
+
+    steps:
+    - name: Info
+      run: |
+        echo "Info"
+        echo "Actor: ${{ github.actor }}"
+        echo "Repository: ${{ github.repository }}"
+        echo "Workflow: ${{ github.workflow }}"
+        echo "Event: ${{ github.event_name }}"
+        echo "Branch (ref): ${{ github.ref }}"
+        echo "Branch (base_ref): ${{ github.base_ref }}"
+        echo "Branch (head_ref): ${{ github.head_ref }}"
+      env:
+        CI: true
+  lint:
+    name: Lint
+
+    timeout-minutes: 15
+
+    runs-on: ubuntu-latest
+
+    container: node:12
+
+    steps:
+    - uses: actions/checkout@v1
+      with:
+        fetch-depth: 1
+    - name: Use Node.js
+      uses: actions/setup-node@v2.4.0
+    - name: Install and Lint
+      run: |
+        cd frontend
+        npm ci
+        npm run lint
+      env:
+        CI: true

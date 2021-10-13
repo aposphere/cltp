@@ -5,17 +5,21 @@ import { Credentials } from './interfaces/credentials';
 import { ConfigService } from './services/config.service';
 import { InputDevice, StateService } from './services/state.service';
 
-@Component({
+@Component(
+{
   selector: 'app-root',
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.scss'],
 })
 export class AppComponent implements OnDestroy
 {
+  /** The user credentials */
   credentials?: Credentials
 
+  /** The currently selected input device */
   inputDevice: InputDevice = "scanner"
 
+  /** Flag for the flash overlay */
   flash = false
 
   unsubscribe$ = new Subject<void>()
@@ -26,7 +30,10 @@ export class AppComponent implements OnDestroy
   )
   {
     this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) => this.inputDevice = inputDevice);
+
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
+
+    // Listen to scanSuccess and create a flash on-screen
     this.stateService.scanSucess.pipe(takeUntil(this.unsubscribe$))
     .pipe(
       tap(() => this.flash = true),
@@ -35,6 +42,9 @@ export class AppComponent implements OnDestroy
     ).subscribe((v) => { console.info("Successful Scan:", v) });
   }
 
+  /**
+   * Change the input device in the select menu and forward it to the state
+   */
   changeInputDevice(ev: Event): void
   {
     // Change input device

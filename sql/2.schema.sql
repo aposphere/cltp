@@ -12,29 +12,8 @@
  Target Server Version : 15004178
  File Encoding         : 65001
 
- Date: 12/10/2021 09:44:26
+ Date: 12/10/2021 16:59:46
 */
-
-
--- ----------------------------
--- Table structure for audit_log
--- ----------------------------
-IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[audit_log]') AND type IN ('U'))
-	DROP TABLE [cltp].[audit_log]
-GO
-
-CREATE TABLE [cltp].[audit_log] (
-  [id] bigint  IDENTITY(1,1) NOT NULL,
-  [type] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [ref] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [actor] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [message] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
-  [creation_timestamp] datetime DEFAULT getdate() NOT NULL
-)
-GO
-
-ALTER TABLE [cltp].[audit_log] SET (LOCK_ESCALATION = TABLE)
-GO
 
 
 -- ----------------------------
@@ -250,7 +229,7 @@ CREATE TABLE [cltp].[probe_order] (
   [unternehmen_telefon_mobil] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
   [poolmanager_nachname] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
   [poolmanager_vorname] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NULL,
-  [barcode_nummer] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
+  [barcode_nummer] varchar(64) COLLATE SQL_Latin1_General_CP1_CI_AS  NOT NULL,
   [creation_timestamp] datetime DEFAULT getdate() NOT NULL
 )
 GO
@@ -565,7 +544,7 @@ IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[r
 	DROP VIEW [cltp].[rack_ready]
 GO
 
-CREATE VIEW [cltp].[rack_ready] AS SELECT cltp.rack.* FROM (cltp.rack LEFT JOIN cltp.connection_rack_plate ON (cltp.rack.rack_id = cltp.connection_rack_plate.rack_id AND cltp.rack.i = cltp.connection_rack_plate.rack_i))
+CREATE VIEW [cltp].[rack_ready] AS SELECT cltp.rack.* FROM (cltp.rack LEFT JOIN cltp.connection_rack_plate ON cltp.rack.rack_id = cltp.connection_rack_plate.rack_id)
 WHERE cltp.connection_rack_plate.rack_id IS NULL;
 GO
 
@@ -596,22 +575,6 @@ CREATE VIEW [cltp].[unused_rack] AS SELECT cltp.rack.rack_id,
    FROM (cltp.rack
      LEFT JOIN cltp.connection_rack_plate ON ((((cltp.rack.rack_id) = (cltp.connection_rack_plate.rack_id)) AND (cltp.rack.i = cltp.connection_rack_plate.rack_i))))
   WHERE (cltp.connection_rack_plate.plate_id IS NULL);
-GO
-
-
--- ----------------------------
--- Auto increment value for audit_log
--- ----------------------------
-DBCC CHECKIDENT ('[cltp].[audit_log]', RESEED, 16)
-GO
-
-
--- ----------------------------
--- Primary Key structure for table audit_log
--- ----------------------------
-ALTER TABLE [cltp].[audit_log] ADD CONSTRAINT [PK__audit_lo__3213E83F8DCCB61A] PRIMARY KEY CLUSTERED ([id])
-WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
-ON [PRIMARY]
 GO
 
 
@@ -747,6 +710,15 @@ GO
 
 
 -- ----------------------------
+-- Uniques structure for table probe_order
+-- ----------------------------
+ALTER TABLE [cltp].[probe_order] ADD CONSTRAINT [uq_barcode_nummer] UNIQUE NONCLUSTERED ([barcode_nummer] ASC)
+WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+ON [PRIMARY]
+GO
+
+
+-- ----------------------------
 -- Primary Key structure for table probe_order
 -- ----------------------------
 ALTER TABLE [cltp].[probe_order] ADD CONSTRAINT [probe_order_pkey] PRIMARY KEY CLUSTERED ([id])
@@ -847,6 +819,13 @@ ALTER TABLE [cltp].[interpretation] ADD CONSTRAINT [fk_interpretation_pool] FORE
 GO
 
 ALTER TABLE [cltp].[interpretation] ADD CONSTRAINT [fk_interpretation_result] FOREIGN KEY ([result_entry_id]) REFERENCES [cltp].[result_entry] ([id]) ON DELETE CASCADE ON UPDATE CASCADE
+GO
+
+
+-- ----------------------------
+-- Foreign Keys structure for table pool
+-- ----------------------------
+ALTER TABLE [cltp].[pool] ADD CONSTRAINT [fk_pool_probe_order] FOREIGN KEY ([pool_id]) REFERENCES [cltp].[probe_order] ([barcode_nummer]) ON DELETE CASCADE ON UPDATE CASCADE
 GO
 
 

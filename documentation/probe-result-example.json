@@ -1,0 +1,19 @@
+{
+  "unternehmen_key": "b55dd52c-a280-4094-b16e-easd5f3e3b16",
+  "unternehmen_uid": null,
+  "unternehmen_typ": "Gesundheisorganisation",
+  "unternehmen_name": "Example Business",
+  "unternehmen_abteilung": "Example Section",
+  "unternehmen_ort": "Zürich",
+  "unternehmen_postleitzahl": "1234",
+  "unternehmen_strasse": "Sample Street 3",
+  "unternehmen_email": "john.smith@gmail.com",
+  "unternehmen_telefon_geschaeft": "+410123456789",
+  "unternehmen_telefon_mobil": "+410123456789",
+  "poolmanager_nachname": "John",
+  "poolmanager_vorname": "Smith",
+  "barcode_nummer": "1000000001",
+  "untersuchung_datum": "2021-09-30 13:06:00",
+  "untersuchung_resultat": "negative",
+  "untersuchung_absender": "Universitaetsspital Neuropathologie"
+}

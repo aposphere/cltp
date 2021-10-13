@@ -1,5 +1,8 @@
 import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
+/**
+ * Validator for a json text input
+ */
 export function jsonValidator(): ValidatorFn
 {
   return (control: AbstractControl): ValidationErrors | null =>

@@ -8,8 +8,7 @@ WORKDIR /usr/cltp
 RUN apt-get update && apt-get install -y nano vim && apt-get clean
 
 # Install app dependencies
-# COPY package.json package-lock.json tsconfig.json tsconfig.spec.json tsconfig.app.json .eslintrc.json angular.json .browserslistrc ./
-COPY package.json package-lock.json tsconfig.json tsconfig.spec.json tsconfig.app.json angular.json .browserslistrc ./
+COPY package.json package-lock.json tsconfig.json tsconfig.spec.json tsconfig.app.json .eslintrc.json angular.json .browserslistrc ./
 RUN npm i -g @angular/cli && npm ci
 
 # Bundle app source

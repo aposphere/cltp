@@ -2,16 +2,18 @@ import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
 import { filter, takeUntil } from 'rxjs/operators';
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
-import { AuditLog } from 'src/app/interfaces/audit-log';
+import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { Credentials } from 'src/app/interfaces/credentials';
-import { Plate } from 'src/app/interfaces/plate';
-import { Rack } from 'src/app/interfaces/rack';
+import { Plate } from 'src/app/interfaces/plate.table';
+import { Rack } from 'src/app/interfaces/rack.table';
 import { ConfigService } from 'src/app/services/config.service';
 import { DBService } from 'src/app/services/db.service';
 import { InputDevice, StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 
+/** Workflow steps */
 const steps = ["identify-plate", "scan-racks", "done"] as const
+/** Workflow step tyle */
 type Step = typeof steps[number];
 
 
@@ -22,28 +24,38 @@ type Step = typeof steps[number];
 })
 export class RackPlateMappingComponent implements OnDestroy
 {
+  /** The user credentials */
   credentials?: Credentials;
 
+  /** The matrix */
   matrix =
   {
     x: ["1", "2", "3", "4"],
     y: ["A"],
   }
 
+  /** The rack limit */
   rackLimit = this.matrix.x.length * this.matrix.y.length
 
+  /** The current workflow step */
   currentStep?: Step = undefined
 
+  /** The current indices in the matrix */
   indices: { x: number, y: number } = { x: 0, y: 0 }
 
+  /** The selected input device */
   inputDevice: InputDevice = "scanner"
 
+  /** Flag whether the scanner is enabled */
   scannerEnabled = false
 
+  /** The plate id */
   plateId?: string
 
+  /** The next rack id */
   nextRackId?: string
 
+  /** The added racks */
   addedRacks: { rack: Rack, coordinate: string }[] = []
 
 
@@ -59,12 +71,15 @@ export class RackPlateMappingComponent implements OnDestroy
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
     this.stateService.inputDevice.pipe(takeUntil(this.unsubscribe$)).subscribe((inputDevice) =>
     {
+      // Disable the scanner if necessary
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-plate" || this.currentStep === "scan-racks")) this.stateService.scannerInputEnable.next(false)
       this.inputDevice = inputDevice
+      // Enable the scanner if necessary
       if (this.inputDevice === "scanner" && (this.currentStep === "identify-plate" || this.currentStep === "scan-racks")) this.stateService.scannerInputEnable.next(true)
     });
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'identify-plate' &&  this.inputDevice === 'scanner')).subscribe(async (input) =>
     {
+      // Receive the scanner input
       this.stateService.scanSucess.next()
       await this.checkPlate(input)
       if (this.inputDevice !== 'scanner') this.stateService.scannerInputEnable.next(false)
@@ -72,6 +87,9 @@ export class RackPlateMappingComponent implements OnDestroy
     this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.currentStep === 'scan-racks' && this.inputDevice === 'scanner')).subscribe((input) => this.rackScanSuccessHandler(input))
   }
 
+  /**
+   * Reset the complete workflow
+   */
   reset(): void
   {
     this.currentStep = undefined
@@ -81,12 +99,18 @@ export class RackPlateMappingComponent implements OnDestroy
     this.addedRacks = []
   }
 
+  /**
+   * Start the workflow
+   */
   start(): void
   {
     this.currentStep = 'identify-plate'
     if (this.inputDevice === 'scanner') this.stateService.scannerInputEnable.next(true)
   }
 
+  /**
+   * Success handler for the scanner
+   */
   async plateScanSuccessHandler(ev: string): Promise<void>
   {
     // Do not override
@@ -101,6 +125,9 @@ export class RackPlateMappingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Check the plate id
+   */
   async checkPlate(plateId: string): Promise<void>
   {
     // Make sure a plate is used only ONCE
@@ -125,10 +152,14 @@ export class RackPlateMappingComponent implements OnDestroy
       return
     }
 
+    // Save the plate id and go to next step
     this.plateId = plateId
     this.currentStep = 'scan-racks'
   }
 
+  /**
+   * Success handler for the scanner
+   */
   rackScanSuccessHandler(ev: string): void
   {
     // Ignore last one
@@ -148,16 +179,23 @@ export class RackPlateMappingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Error handler for the scanner
+   */
   scanErrorHandler(ev: unknown): void
   {
     console.error("SCAN ERROR")
     console.error(ev)
   }
 
+  /**
+   * Input the next rack id
+   */
   async manualNextRackId(rackId?: string): Promise<void>
   {
     if (rackId)
     {
+      // Check for duplicates
       if (this.addedRacks.some((el) => el.rack.rack_id === rackId))
       {
         alert(`This rack id (${ rackId }) is duplicate!`)
@@ -230,11 +268,13 @@ export class RackPlateMappingComponent implements OnDestroy
       }
 
 
+      // Add the racks
       this.addedRacks.push(
       {
         rack: { rack_id: rackId, i: rackI },
         coordinate: this.matrix.y[this.indices.y] + this.matrix.x[this.indices.x],
       })
+      // Flash
       this.stateService.scanSucess.next()
       this.nextRackId = undefined
 
@@ -253,6 +293,9 @@ export class RackPlateMappingComponent implements OnDestroy
     }
   }
 
+  /**
+   * Complete the workflow
+   */
   done(): void
   {
     this.currentStep = 'done'
@@ -260,12 +303,17 @@ export class RackPlateMappingComponent implements OnDestroy
   }
 
 
+  /**
+   * Upload the results of the workflow
+   */
   async upload(): Promise<void>
   {
     if (this.plateId)
     {
+      // Get the actor
       const actor = this.credentials?.username || 'anonymous'
 
+      // Create the plate
       const plate: Plate =
       {
         plate_id: this.plateId,
@@ -282,6 +330,7 @@ export class RackPlateMappingComponent implements OnDestroy
       }
       q += `INSERT INTO cltp.audit_log (${ Object.keys(auditLog).join(',') }) VALUES (${ Object.values(auditLog).map(sqlValueFormatter).join(',') });`
 
+      // Add the racks
       for (const el of this.addedRacks)
       {
         q += `INSERT INTO cltp.connection_rack_plate (plate_id, rack_id, rack_i, coordinate) VALUES ('${ plate.plate_id }','${ el.rack.rack_id }','${ el.rack.i }','${ el.coordinate }');`
@@ -309,6 +358,7 @@ export class RackPlateMappingComponent implements OnDestroy
       }
     }
 
+    // Reset the workflow
     this.reset()
   }
 

@@ -25,8 +25,10 @@ import { HttpClientModule } from '@angular/common/http';
 
 import { ZXingScannerModule } from '@zxing/ngx-scanner';
 
-@NgModule({
-  declarations: [
+@NgModule(
+{
+  declarations:
+  [
     AppComponent,
     HomeComponent,
     SystemPopupsComponent,
@@ -41,7 +43,8 @@ import { ZXingScannerModule } from '@zxing/ngx-scanner';
     UploadResultsComponent,
     DownloadProbeResultsComponent,
   ],
-  imports: [
+  imports:
+  [
     BrowserModule,
     HttpClientModule,
     AppRoutingModule,

@@ -5,20 +5,16 @@ import { Subject } from 'rxjs'; import { DBService } from 'src/app/services/db.s
 import { StateService } from 'src/app/services/state.service';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { v4 } from 'uuid';
-import { InterpretationExported } from 'src/app/interfaces/interpretation_exported';
+import { InterpretationExported } from 'src/app/interfaces/interpretation_exported.table';
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
-import { Interpretation } from 'src/app/interfaces/interpretation';
+import { Interpretation } from 'src/app/interfaces/interpretation.table';
 import moment from 'moment';
-import { AuditLog } from 'src/app/interfaces/audit-log';
+import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { takeUntil } from 'rxjs/operators';
 import { ConfigService } from 'src/app/services/config.service';
+import { ProbeResult } from 'src/app/interfaces/probe-result.view';
 
-interface ProbeResult
-{
-  creation_timestamp: string,
-  barcode_nummer: string
-}
 
 @Component({
   selector: 'app-download-probe-results',
@@ -27,18 +23,25 @@ interface ProbeResult
 })
 export class DownloadProbeResultsComponent implements OnDestroy
 {
-  active = 1
-
+  /** The user credentials */
   credentials?: Credentials
 
+  /** Active tab */
+  active = 1
+
+  /** Pending interpretations to be downloaded */
   pendingInterpretations: Interpretation[] = []
 
+  /** The probe results entries */
   probeResults: { label: string, data: string }[] = []
 
+  /** The internal probe results entries */
   internalProbeResults: { label: string, data: string }[] = []
 
+  /** Flag probe results downloaded */
   probeResultsDownloaded = false
 
+  /** Flag internal probe results downloaded */
   internalProbeResultsDownloaded = false
 
   unsubscribe$ = new Subject<void>();
@@ -57,6 +60,9 @@ export class DownloadProbeResultsComponent implements OnDestroy
     this.loadPendingInterpretations()
   }
 
+  /**
+   * Load pending interpretations
+   */
   async loadPendingInterpretations(): Promise<void>
   {
     let results;
@@ -76,6 +82,9 @@ export class DownloadProbeResultsComponent implements OnDestroy
     this.pendingInterpretations = results
   }
 
+   /**
+   * Load probe results
+   */
   async loadProbeResults(): Promise<void>
   {
     let results;
@@ -94,13 +103,16 @@ export class DownloadProbeResultsComponent implements OnDestroy
 
     this.probeResults = results.map((el) =>
     {
-      return { label: `result_${ el.barcode_nummer }_${ moment(el.creation_timestamp).format("YYYYMMDD-HHMMSS") }.json`, data: JSON.stringify(el) }
+      return { label: `result_${ el.barcode_nummer }_${ moment(el.untersuchung_datum).format("YYYYMMDD-HHMMSS") }.json`, data: JSON.stringify(el) }
     })
 
     if (this.probeResults.length === 0) this.probeResultsDownloaded = true
   }
 
 
+   /**
+   * Load internal probe results
+   */
   async loadInternalProbeResults(): Promise<void>
   {
     let results;
@@ -119,47 +131,62 @@ export class DownloadProbeResultsComponent implements OnDestroy
 
     this.internalProbeResults = results.map((el) =>
     {
-      return { label: `result_${ el.barcode_nummer }_${ moment(el.creation_timestamp).format("YYYYMMDD-HHMMSS") }.json`, data: JSON.stringify(el)  }
+      return { label: `result_${ el.barcode_nummer }_${ moment(el.unternehmen_abteilung).format("YYYYMMDD-HHMMSS") }.json`, data: JSON.stringify(el)  }
     })
 
     if (this.internalProbeResults.length === 0) this.internalProbeResultsDownloaded = true
   }
 
 
-  async downloadProbeResults(): Promise<void>
+   /**
+   * Download probe results
+   */
+    async downloadProbeResults(): Promise<void>
   {
     const zip = new JSZip();
 
-    for (const probeResult of this.probeResults)zip.file(probeResult.label, probeResult.data);
+    // Collect all files into the zip
+    for (const probeResult of this.probeResults) zip.file(probeResult.label, probeResult.data);
 
     const c = await zip.generateAsync({ type: "blob" })
 
+    // Save the zip
     saveAs(c, `probe-results-${ Date.now() }.zip`);
 
     this.probeResultsDownloaded = true
   }
 
-  async downloadInternalProbeResults(): Promise<void>
+   /**
+   * Download internal probe results
+   */
+    async downloadInternalProbeResults(): Promise<void>
   {
     const zip = new JSZip();
 
+    // Collect all files into the zip
     for (const probeResult of this.internalProbeResults) zip.file(probeResult.label, probeResult.data);
 
     const c = await zip.generateAsync({ type: "blob" })
 
+    // Save the zip
     saveAs(c, `internal-probe-results-${ Date.now() }.zip`);
 
     this.internalProbeResultsDownloaded = true
   }
 
+  /**
+   * Mark the interpretations as exported
+   */
   async markInterpretationsAsExported(): Promise<void>
   {
     if (!confirm("Make sure you downloaded all the external and internal probe results! If yes, mark them as 'exported' and they will get archived.")) return
 
     let q = ""
 
+    // Get actor
     const actor = this.credentials?.username || 'anonymous'
 
+    // Mark all pendings as interpretation
     for (const pendingInterpretation of this.pendingInterpretations)
     {
       const interpretationExported: InterpretationExported =

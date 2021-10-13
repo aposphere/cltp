@@ -1,10 +1,10 @@
 import { Component, OnDestroy } from '@angular/core';
 import { Subject } from 'rxjs';
-import { filter, takeUntil } from 'rxjs/operators';
-import { Interpretation } from 'src/app/interfaces/interpretation';
-import { MappingView } from 'src/app/interfaces/mapping-view';
-import { Result } from 'src/app/interfaces/result';
-import { ResultEntry } from 'src/app/interfaces/result-entry';
+import {  takeUntil } from 'rxjs/operators';
+import { Interpretation } from 'src/app/interfaces/interpretation.table';
+import { MappingView } from 'src/app/interfaces/mapping.view';
+import { Result } from 'src/app/interfaces/result.table';
+import { ResultEntry } from 'src/app/interfaces/result-entry.table';
 import { DBService } from 'src/app/services/db.service';
 import { StateService } from 'src/app/services/state.service';
 import { v4 } from 'uuid';
@@ -14,78 +14,109 @@ import { sqlValueFormatter } from '../../helpers/sql-value-formatter';
 import { ToastsService } from 'src/app/services/toasts.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
-import { AuditLog } from 'src/app/interfaces/audit-log';
+import { AuditLog } from 'src/app/interfaces/audit-log.table';
 
+/** The coordinate of the neg control */
 const NEG_CONTROL_COORDINATE = "C24"
+/** The coordinate of the neg control */
 const POS_CONTROL_COORDINATE = "P24"
 
-// const NEG_CONTROL_COORDINATE = "P24"
-// const POS_CONTROL_COORDINATE = "P1"
-
+/** The index of the coordinate in the results csv */
 const COL_COORDINATE = 1
+/** The index of the cq value in the results csv */
 const COL_CQ = 8
 
+/** Height of the PCR Plate */
 const M = 16
+/** Width of the PCR Plate */
 const N = 24
 
+/** Height of the Plate */
 const O = 8
+/** Width of the Plate */
 const P = 12
 
+/** Height of the Rack */
 const Q = 4
+/** Width of the Rack */
 const R = 6
 
+/** Alphabet */
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 
+/** Interface of the object containing all result data extracted from the results csv */
 interface ResultData
 {
+  /** The result entry of the csv */
   result: Result,
+  /** All entries of the result */
   resultEntries: ResultEntry[],
+  /** The interpretations located in the pcr plate */
   pcrMap: Interpretation[][],
+  /** The interpretations located in the plates */
   plateMaps: { plateId: string, map: Interpretation[][] }[],
+  /** The interpretations located in the racks */
   rackMaps: { rackId: string, map: Interpretation[][] }[],
+  /** All interpretations of the pools */
   interpretations: Interpretation[],
+  /** Interpretation of the negative control */
   negControl: number | "undetermined",
+  /** Interpretation of the positive control */
   posControl: number | "undetermined",
+  /** Number of entries tested */
   entriesTested: number,
+  /** Number of negative entries */
   entriesNeg: number,
+  /** Number of positive entries */
   entriesPos: number,
+  /** Number of undetermined entries */
   entriesUn: number,
+  /** Number of results found without any interpretation of pool */
   noResults: MappingView[]
 }
 
-@Component({
+@Component(
+{
   selector: 'app-upload-results',
   templateUrl: './upload-results.component.html',
   styleUrls: ['./upload-results.component.scss'],
 })
 export class UploadResultsComponent implements OnDestroy
 {
+  /** The user credentials */
   credentials?: Credentials;
 
+  /** Height of the PCR Plate */
   N = N
 
+  /** Width of the PCR Plate */
   M = M
 
+  /** Height of the Plate */
   O = O
 
+  /** Width of the Plate */
   P = P
 
+  /** Height of the Rack */
   Q = Q
 
+  /** Width of the Rack */
   R = R
 
+  /** Alphabet */
   ALPHABET = ALPHABET
 
+  /** Active tab */
   active = 1
 
-  cameraEnabled = false
-
-  scannerEnabled = false;
-
+  /** The pcr plate identifier extracted from the results csv */
   pcrPlateId?: string
 
+  /** The results csv */
   file?: File
 
+  /** The results data extracted from the results csv */
   resultData?: ResultData
 
   unsubscribe$ = new Subject<void>()
@@ -98,65 +129,67 @@ export class UploadResultsComponent implements OnDestroy
   )
   {
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
-    this.stateService.scannerInput.pipe(takeUntil(this.unsubscribe$), filter(() => this.scannerEnabled)).subscribe((input) =>
-    {
-      this.stateService.scanSucess.next()
-      this.pcrPlateId = input
-      this.scannerEnabled = false
-      this.stateService.scannerInputEnable.next(false)
-    });
   }
 
-  scanSuccessHandler(ev: string): void
-  {
-    this.stateService.scanSucess.next()
-    this.pcrPlateId = ev
-    this.cameraEnabled = false
-  }
-
-  scanErrorHandler(ev: unknown): void
-  {
-    console.error("SCAN ERROR")
-    console.error(ev)
-  }
-
+  /**
+   * Event handler listening to files being uploaded
+   */
   fileChanged(ev: Event): void
   {
+    // Check for file
     const t = ev.target as HTMLInputElement
     if (t.files && t.files[0])
     {
+      // Save the file
       this.file = t.files[0]
+
+      // Parse the file
       this.parseFile()
     }
     else throw new Error("File or file list is undefined")
   }
 
+  /**
+   * Parse the file content
+   */
   parseFile(): void
   {
     if (!this.file) throw new Error("No file specified")
 
+    // Use FileReader to get the text content of the file
     const fileReader = new FileReader()
+    // Wait for file being loaded
     fileReader.onload = (_e) =>
     {
+      // Analyse the content of the result csv
       this.analyseFileContent(fileReader.result as string)
     }
+    // Read as text
     fileReader.readAsText(this.file)
   }
 
+  /**
+   * Analyse the content of the result csv
+   */
   async analyseFileContent(content: string): Promise<void>
   {
+    // Split the rows
     const rows = content.split('\n')
 
     // Create the result object
     const resultRaw = []
 
+    // Get all comment limes
     while (rows[0].startsWith("#")) resultRaw.push(rows.shift())
 
+    // Filter out the barcode row
     const barcodeRow = resultRaw.find((row) => row?.includes("Barcode"))
+    // Extract the pcr plate id
     if (barcodeRow) this.pcrPlateId = barcodeRow?.split(": ")[1].trim()
 
     if (!this.pcrPlateId) throw new Error("PCR Plate ID is undefined")
 
+    // Create the result entry
     const result: Result =
     {
       id: v4(),
@@ -210,6 +243,7 @@ export class UploadResultsComponent implements OnDestroy
       const humanIC = humanICRaw.trim().split(",").map((s) => s.slice(1, -1))
 
 
+      // Create an entry
       const resultEntry: ResultEntry =
       {
         id: v4(),
@@ -226,21 +260,28 @@ export class UploadResultsComponent implements OnDestroy
     const posControlEntry = resultEntries.find((entry) => entry.coordinate === POS_CONTROL_COORDINATE)
     const negControlEntry = resultEntries.find((entry) => entry.coordinate === NEG_CONTROL_COORDINATE)
 
+    // Check the controls
     if (!posControlEntry) return alert("Positive control entry not found!")
     if (!negControlEntry) return alert("Negative control entry not found!")
 
     if (negControlEntry.n1n2_cq !== undefined) return alert(`Negative control failed! N1N2_cq (${ negControlEntry.coordinate }) is '${ negControlEntry.n1n2_cq }' instead of 'Undetermined'!`)
     if (posControlEntry.n1n2_cq === undefined || posControlEntry.n1n2_cq >= 40) return alert(`Positive control failed! N1N2_cq (${ posControlEntry.coordinate }) is '${ posControlEntry.n1n2_cq }' instead of '<40'!`)
 
+    // Interprete results
     this.interpreteResults(result, resultEntries, posControlEntry.n1n2_cq, negControlEntry.n1n2_cq)
   }
 
+  /**
+   * Interprete results
+   */
   async interpreteResults(result: Result, resultEntries: ResultEntry[], posControl: number | undefined, negControl: number | undefined): Promise<void>
   {
+    // Create the pcr plate map
     const pcrMap = new Array<Interpretation[]>(M);
     for (let i = 0; i < M; i++) pcrMap[i] = new Array<Interpretation>(N);
 
 
+    // Create result data
     const resultData: ResultData =
     {
       result: result,
@@ -262,6 +303,7 @@ export class UploadResultsComponent implements OnDestroy
     let mapping;
     try
     {
+      // Get the mapping
       const mappingRes = await this.dbService.query(`SELECT * FROM cltp.mapping WHERE pcr_plate_id='${ this.pcrPlateId }';`)
 
       mapping = (mappingRes as { recordset: MappingView[] }).recordset
@@ -286,6 +328,7 @@ export class UploadResultsComponent implements OnDestroy
       // pcr_plate coordinate for pool translated by local plate coordinate
       const effectivePcrPlateCoordinate = map_transform_plate_to_pcr_plate[plateCoordinate][effectivePlateCoordinate]
 
+      // Get the result of the mapping
       const result = resultEntries.find((entry) => entry.coordinate === effectivePcrPlateCoordinate)
       if (result)
       {
@@ -296,6 +339,7 @@ export class UploadResultsComponent implements OnDestroy
         else if (result.n1n2_cq !== undefined && result.n1n2_cq < 40) i = "positive";
         else if (result.n1n2_cq === undefined && (result.human_ic_cq === undefined || result.human_ic_cq > 35)) i = "undetermined"
 
+        // Create an interpretation
         const interpretation: Interpretation =
         {
           id: v4(),
@@ -365,16 +409,17 @@ export class UploadResultsComponent implements OnDestroy
       }
     }
 
-
-    console.log(resultData)
-
     this.resultData = resultData
   }
 
+  /**
+   * Upload the results
+   */
   async uploadResults(): Promise<void>
   {
     if (!this.resultData) throw new Error("Result data not available")
 
+    // Get the actor
     const actor = this.credentials?.username || 'anonymous'
 
     // Create the result
@@ -439,17 +484,23 @@ export class UploadResultsComponent implements OnDestroy
     this.resultData = undefined
   }
 
+  /**
+   * Show details of a pool
+   */
   showDetails(poolId?: string): void
   {
     if (!poolId) alert("No pool available here.")
 
       if (this.resultData)
       {
+        // Get interpretation of the pool
         const interpretation = this.resultData.interpretations.find((i) => i.pool_id === poolId)
+        // Get result of the pool
         const result = this.resultData.resultEntries.find((r) => r.id === interpretation?.result_entry_id)
 
         if (result)
         {
+          // Show as alert popup
           alert(`Pool '${ poolId }': [${ interpretation?.interpretation.toUpperCase() }] (n1n2_cq = ${ result.n1n2_cq }, human_ic = ${ result.human_ic_cq })`)
         }
       }
