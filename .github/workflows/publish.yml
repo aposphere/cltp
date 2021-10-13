@@ -62,3 +62,61 @@ jobs:
         push: true
         tags: ${{ steps.docker_meta.outputs.tags }}
         labels: ${{ steps.docker_meta.outputs.labels }}
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+    - name: Use Node.js
+      uses: actions/setup-node@v2.4.0
+    - name: Install angular cli
+      run: npm i -g @angular/cli
+      env:
+        CI: true
+    - name: Install and Build
+      run: |
+        cd php
+        bash build.sh
+      env:
+        CI: true
+    - name: Install and Build "SARSCov2"
+      run: |
+        cd php
+        bash build-SARSCov2.sh
+      env:
+        CI: true
+    - name: Get version
+      id: version
+      run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
+    - name: Release
+      uses: actions/create-release@v1
+      id: create_release
+      with:
+        draft: false
+        # Create a prerelease if "-" is contained in the version
+        prerelease: ${{ contains(steps.version.outputs.version, '-') }}
+        release_name: Release ${{ steps.version.outputs.version }}
+        tag_name: ${{ github.ref }}
+        body_path: CHANGELOG.md
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+    - name: Attach PHP Build Files
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: backend/cltp.zip
+        asset_name: cltp-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip
+    - name: Attach PHP Build Files "SARSCov2"
+      uses: actions/upload-release-asset@v1
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: backend/cltp-SARSCov2.zip
+        asset_name: cltp-SARSCov2-${{ steps.version.outputs.version }}.zip
+        asset_content_type: application/zip

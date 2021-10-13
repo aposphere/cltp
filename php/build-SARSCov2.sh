@@ -3,7 +3,7 @@
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 
-rm -f -R cltp.zip
+rm -f -R cltp-SARSCov2.zip
 rm -f -R php-dist
 rm -f -R ../php-dist
 
