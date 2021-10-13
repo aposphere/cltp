@@ -81,18 +81,6 @@ jobs:
         npm ci
       env:
         CI: true
-    - name: Install and Build
-      run: |
-        cd php
-        bash build.sh
-      env:
-        CI: true
-    - name: Install and Build "SARSCov2"
-      run: |
-        cd php
-        bash build-SARSCov2.sh
-      env:
-        CI: true
     - name: Get version
       id: version
       run: echo ::set-output name=version::${GITHUB_REF/refs\/tags\//}
@@ -108,6 +96,12 @@ jobs:
         body_path: CHANGELOG.md
       env:
         GITHUB_TOKEN: ${{ github.token }}
+    - name: Install and Build
+      run: |
+        cd php
+        bash build.sh
+      env:
+        CI: true
     - name: Attach PHP Build Files
       uses: actions/upload-release-asset@v1
       env:
@@ -117,6 +111,12 @@ jobs:
         asset_path: php/cltp.zip
         asset_name: cltp-${{ steps.version.outputs.version }}.zip
         asset_content_type: application/zip
+    - name: Install and Build "SARSCov2"
+      run: |
+        cd php
+        bash build-SARSCov2.sh
+      env:
+        CI: true
     - name: Attach PHP Build Files "SARSCov2"
       uses: actions/upload-release-asset@v1
       env:

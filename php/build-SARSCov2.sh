@@ -5,12 +5,17 @@ set -e
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd )"
 
 
-rm -f -R cltp-SARSCov2.zip
+# Clear old builds
+rm -f -R cltp.zip
+rm -f -R cltp-*.zip
 rm -f -R php-dist
 rm -f -R ../php-dist
 
 echo "Copy the php backend files"
 cp -R . ../php-dist
+
+echo "Copy the sql scripts"
+cp -R ../sql ../php-dist
 
 cd ../frontend
 
