@@ -4,7 +4,7 @@ This is the repo containing the source code, the deployment configs, the manuals
 
 ## Source Code
 
-The source code of the different services working together are all located in this repo. In-depth documentation is provided in the respectitive subfolder while usage and concepts are documented in [#documentation].
+The source code of the different services working together are all located in this repo. In-depth documentation is provided in the respectitive subfolder while usage and concepts are documented in [documentation](#documentation).
 
 * Database Schema: [`/database/README.md`](/database/README.md)
 * Frontend: [`/frontend/README.md`](/frontend/README.md)
