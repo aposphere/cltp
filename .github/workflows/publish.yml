@@ -75,6 +75,12 @@ jobs:
       run: npm i -g @angular/cli
       env:
         CI: true
+    - name: Setup angular builder
+      run: |
+        cd frontend
+        npm ci
+      env:
+        CI: true
     - name: Install and Build
       run: |
         cd php
