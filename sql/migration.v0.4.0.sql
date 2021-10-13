@@ -244,14 +244,17 @@ ALTER VIEW [cltp].[unused_rack] AS SELECT cltp.rack.rack_id,
    FROM (cltp.rack
      LEFT JOIN cltp.connection_rack_plate ON ((((cltp.rack.rack_id) = (cltp.connection_rack_plate.rack_id)) AND (cltp.rack.i = cltp.connection_rack_plate.rack_i))))
   WHERE (cltp.connection_rack_plate.plate_id IS NULL);
+GO
 
 ALTER TABLE [cltp].[interpretation_exported] ADD CONSTRAINT [fk_interpretation_exported_interpretation] FOREIGN KEY ([interpretation_id]) REFERENCES [cltp].[interpretation] ([id]) ON DELETE CASCADE ON UPDATE CASCADE
+GO
 
 ALTER TABLE [cltp].[probe_order] ADD CONSTRAINT [uq_barcode_nummer] UNIQUE NONCLUSTERED ([barcode_nummer])
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
+GO
 
 ALTER TABLE [cltp].[pool] ADD CONSTRAINT [fk_pool_probe_order] FOREIGN KEY ([pool_id]) REFERENCES [cltp].[probe_order] ([barcode_nummer]) ON DELETE CASCADE ON UPDATE CASCADE
-
+GO
 
 CREATE TABLE [cltp].[audit_log] (
   [id] bigint IDENTITY NOT NULL,
