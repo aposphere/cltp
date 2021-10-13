@@ -15,6 +15,15 @@ $servicePassword = $_ENV["SERVICE_PASSWORD"] ?: 'cltp';
 
 require_once("../db.php");
 
+// Backwards-compatibility for PHP 7.4
+function str_starts_with_php_7($haystack, $needle)
+{
+  $length = strlen($needle);
+  return substr($haystack, 0, $length) === $needle;
+}
+// Backwards-compatibility for PHP 7.4
+
+
 if ($_SERVER['REQUEST_METHOD'] == "GET")
 {
   echo '[cltp] php backend ready!';
@@ -45,7 +54,9 @@ else if ($_SERVER['REQUEST_METHOD'] == "POST")
   {
     $db->beginTransaction();
     // Assume it to be a single select query when it starts with SELECT, otherwise execute and do not return anything
-    if (str_starts_with($query, "SELECT"))
+    // Do not use PHP 8.0 feature due to back-compatibility
+    // https://stackoverflow.com/questions/834303/startswith-and-endswith-functions-in-php
+    if (str_starts_with_php_7($query, "SELECT"))
     {
       $result = $db->query($query);
       $rows = $result->fetchAll(PDO::FETCH_ASSOC);
@@ -54,6 +65,7 @@ else if ($_SERVER['REQUEST_METHOD'] == "POST")
     else
     {
       $result = $db->exec($query);
+      echo(json_encode([]));
     }
 
     $db->commit();
