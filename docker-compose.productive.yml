@@ -3,10 +3,7 @@ version: '3.7'
 services:
   cltp-backend-proxy:
     container_name: cltp-backend-proxy
-    image: cltp-backend-proxy:latest
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
+    image: ghcr.io/aposphere/cltp-backend-proxy:latest
     environment:
       ENDPOINT: https://cltp.ll
       PORT: 8080
@@ -22,10 +19,7 @@ services:
       - db
   cltp-frontend:
     container_name: cltp-frontend
-    image: cltp-frontend:latest
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ghcr.io/aposphere/cltp-frontend:latest
     ports:
       - "80:80"
       - "443:443"
