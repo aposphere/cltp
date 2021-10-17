@@ -105,52 +105,8 @@ GO
 ALTER TABLE [cltp].[staff] ALTER COLUMN [email] varchar(max) COLLATE SQL_Latin1_General_CP1_CI_AS NULL
 GO
 
-ALTER VIEW [cltp].[internal_probe_result] AS SELECT 'unternehmen_key' AS unternehmen_key,
-    'unternehmen_uid' AS unternehmen_uid,
-    'unternehmen_typ' AS unternehmen_typ,
-    'unternehmen_name' AS unternehmen_name,
-    'unternehmen_abteilung' AS unternehmen_abteilung,
-    'unternehmen_ort' AS unternehmen_ort,
-    'unternehmen_postleitzahl' AS unternehmen_postleitzahl,
-    'unternehmen_strasse' AS unternehmen_strasse,
-    'unternehmen_email' AS unternehmen_email,
-    'unternehmen_telefon_geschaeft' AS unternehmen_telefon_geschaeft,
-    'unternehmen_telefon_mobil'AS unternehmen_telefon_mobil,
-    'poolmanager_nachname' AS poolmanager_nachname,
-    'poolmanager_vorname' AS poolmanager_vorname,
-    cltp.pool.pool_id AS barcode_nummer,
-    cltp.interpretation.creation_timestamp AS untersuchung_datum,
-    cltp.interpretation.interpretation AS untersuchung_resultat,
-    'Universitaetsspital Neuropathologie' AS untersuchung_absender
-   FROM ((cltp.connection_pool_sample
-     JOIN cltp.pool ON (((cltp.pool.pool_id) = (cltp.connection_pool_sample.pool_id))))
-     JOIN cltp.interpretation ON (((cltp.pool.pool_id) = (cltp.interpretation.pool_id))));
-GO
-
 CREATE VIEW [cltp].[interpretation_pending] AS SELECT cltp.interpretation.* FROM (cltp.interpretation LEFT JOIN cltp.interpretation_exported ON cltp.interpretation.id = cltp.interpretation_exported.interpretation_id)
 WHERE cltp.interpretation_exported.id IS NULL;
-GO
-
-CREATE VIEW [cltp].[internal_probe_result_pending] AS SELECT 'unternehmen_key' AS unternehmen_key,
-    'unternehmen_uid' AS unternehmen_uid,
-    'unternehmen_typ' AS unternehmen_typ,
-    'unternehmen_name' AS unternehmen_name,
-    'unternehmen_abteilung' AS unternehmen_abteilung,
-    'unternehmen_ort' AS unternehmen_ort,
-    'unternehmen_postleitzahl' AS unternehmen_postleitzahl,
-    'unternehmen_strasse' AS unternehmen_strasse,
-    'unternehmen_email' AS unternehmen_email,
-    'unternehmen_telefon_geschaeft' AS unternehmen_telefon_geschaeft,
-    'unternehmen_telefon_mobil'AS unternehmen_telefon_mobil,
-    'poolmanager_nachname' AS poolmanager_nachname,
-    'poolmanager_vorname' AS poolmanager_vorname,
-    cltp.pool.pool_id AS barcode_nummer,
-    cltp.interpretation_pending.creation_timestamp AS untersuchung_datum,
-    cltp.interpretation_pending.interpretation AS untersuchung_resultat,
-    'Universitaetsspital Neuropathologie' AS untersuchung_absender
-   FROM ((cltp.connection_pool_sample
-     JOIN cltp.pool ON (((cltp.pool.pool_id) = (cltp.connection_pool_sample.pool_id))))
-     JOIN cltp.interpretation_pending ON (((cltp.pool.pool_id) = (cltp.interpretation_pending.pool_id))));
 GO
 
 
@@ -266,3 +222,10 @@ CREATE TABLE [cltp].[audit_log] (
   PRIMARY KEY CLUSTERED ([id])
 WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON)
 )
+
+GO
+
+IF EXISTS (SELECT * FROM sys.all_objects WHERE object_id = OBJECT_ID(N'[cltp].[internal_probe_result]') AND type IN ('V'))
+	DROP VIEW [cltp].[internal_probe_result]
+GO
+

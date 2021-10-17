@@ -144,7 +144,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
     {
       await this.dbService.query(q)
 
-      this.toastsService.show(`${ this.uploadedOrders } Probe Orders successfully inserted into the database`, { classname: 'bg-success text-light' })
+      this.toastsService.show(`${ this.uploadedOrders.length } Probe Orders successfully inserted into the database`, { classname: 'bg-success text-light' })
     }
     catch (e)
     {

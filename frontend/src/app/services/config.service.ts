@@ -3,6 +3,7 @@ import { Observable, ReplaySubject } from 'rxjs';
 import { map } from 'rxjs/operators';
 import { Credentials } from '../interfaces/credentials';
 import { DBService } from './db.service';
+import { MetricsService } from './metrics.service';
 
 
 
@@ -22,6 +23,7 @@ export class ConfigService
 
   constructor(
     public dbService: DBService,
+    public metricsService: MetricsService,
   )
   { }
 
@@ -41,6 +43,9 @@ export class ConfigService
 
       // Run a test query
       await this.dbService.query("SELECT 1 + 1 AS TEST_QUERY", credentials)
+
+      // Log logins to metrics
+      this.metricsService.log({ metric: 'login', value: 1 })
 
       // Save the credentials on success of the test query
       this.credentials.next(credentials);

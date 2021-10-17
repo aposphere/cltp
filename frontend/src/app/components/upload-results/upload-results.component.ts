@@ -15,6 +15,7 @@ import { ToastsService } from 'src/app/services/toasts.service';
 import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { AuditLog } from 'src/app/interfaces/audit-log.table';
+import { MetricsService } from 'src/app/services/metrics.service';
 
 /** The coordinate of the neg control */
 const NEG_CONTROL_COORDINATE = "C24"
@@ -126,6 +127,7 @@ export class UploadResultsComponent implements OnDestroy
     public stateService: StateService,
     public toastsService: ToastsService,
     public configService: ConfigService,
+    public metricsService: MetricsService,
   )
   {
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
@@ -469,6 +471,13 @@ export class UploadResultsComponent implements OnDestroy
     try
     {
       await this.dbService.query(q)
+
+      // Log pcr runs to metrics
+      this.metricsService.log({ metric: 'pcr-runs', value: 1 })
+
+      // Log pool results to metrics
+      this.metricsService.log({ metric: 'pool-results', value: this.resultData.interpretations.length })
+
 
       this.toastsService.show(`Results for PCR Plate '${ this.pcrPlateId }' successfully inserted into the database`, { classname: 'bg-success text-light' })
     }

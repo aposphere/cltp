@@ -6,4 +6,6 @@ export const environment =
   production: true,
   backend: '/backend/',
   servicePassword: 'cltp',
+  metricsEndpoint: '',
+  metricsFailSilently: false,
 };

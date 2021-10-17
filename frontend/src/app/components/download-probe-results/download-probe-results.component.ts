@@ -26,23 +26,14 @@ export class DownloadProbeResultsComponent implements OnDestroy
   /** The user credentials */
   credentials?: Credentials
 
-  /** Active tab */
-  active = 1
-
   /** Pending interpretations to be downloaded */
   pendingInterpretations: Interpretation[] = []
 
   /** The probe results entries */
   probeResults: { label: string, data: string }[] = []
 
-  /** The internal probe results entries */
-  internalProbeResults: { label: string, data: string }[] = []
-
   /** Flag probe results downloaded */
   probeResultsDownloaded = false
-
-  /** Flag internal probe results downloaded */
-  internalProbeResultsDownloaded = false
 
   unsubscribe$ = new Subject<void>();
 
@@ -56,7 +47,6 @@ export class DownloadProbeResultsComponent implements OnDestroy
     this.configService.credentials$.pipe(takeUntil(this.unsubscribe$)).subscribe((credentials) => this.credentials = credentials);
 
     this.loadProbeResults()
-    this.loadInternalProbeResults()
     this.loadPendingInterpretations()
   }
 
@@ -110,33 +100,6 @@ export class DownloadProbeResultsComponent implements OnDestroy
   }
 
 
-   /**
-   * Load internal probe results
-   */
-  async loadInternalProbeResults(): Promise<void>
-  {
-    let results;
-    try
-    {
-      const resultsRes = await this.dbService.query(`SELECT * FROM cltp.internal_probe_result_pending;`)
-
-      results = (resultsRes as { recordset: ProbeResult[] }).recordset
-    }
-    catch (e)
-    {
-      alert("Could not get the probe results from the database!")
-      console.error(e)
-      return
-    }
-
-    this.internalProbeResults = results.map((el) =>
-    {
-      return { label: `result_${ el.barcode_nummer }_${ moment(el.unternehmen_abteilung).format("YYYYMMDD-HHMMSS") }.json`, data: JSON.stringify(el)  }
-    })
-
-    if (this.internalProbeResults.length === 0) this.internalProbeResultsDownloaded = true
-  }
-
 
    /**
    * Download probe results
@@ -156,30 +119,12 @@ export class DownloadProbeResultsComponent implements OnDestroy
     this.probeResultsDownloaded = true
   }
 
-   /**
-   * Download internal probe results
-   */
-    async downloadInternalProbeResults(): Promise<void>
-  {
-    const zip = new JSZip();
-
-    // Collect all files into the zip
-    for (const probeResult of this.internalProbeResults) zip.file(probeResult.label, probeResult.data);
-
-    const c = await zip.generateAsync({ type: "blob" })
-
-    // Save the zip
-    saveAs(c, `internal-probe-results-${ Date.now() }.zip`);
-
-    this.internalProbeResultsDownloaded = true
-  }
-
   /**
    * Mark the interpretations as exported
    */
   async markInterpretationsAsExported(): Promise<void>
   {
-    if (!confirm("Make sure you downloaded all the external and internal probe results! If yes, mark them as 'exported' and they will get archived.")) return
+    if (!confirm("Make sure you downloaded all the probe results! If yes, mark them as 'exported' and they will get archived.")) return
 
     let q = ""
 
@@ -210,7 +155,6 @@ export class DownloadProbeResultsComponent implements OnDestroy
       await this.dbService.query(q)
 
       this.probeResults = []
-      this.internalProbeResults = []
     }
     catch (e)
     {

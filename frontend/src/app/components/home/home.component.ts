@@ -15,9 +15,6 @@ export class HomeComponent implements OnDestroy
   /** Number of samples ready */
   samplesReady?: number
 
-  /** Number of pools ready */
-  poolsReady?: number
-
   /** Number of probe orders ready */
   probeOrdersReady?: number
 
@@ -41,7 +38,6 @@ export class HomeComponent implements OnDestroy
   )
   {
     this.loadReadySamples()
-    this.loadReadyPools()
     this.loadReadyProbeOrders()
     this.loadReadyRacks()
     this.loadReadyPlates()
@@ -71,28 +67,6 @@ export class HomeComponent implements OnDestroy
     this.samplesReady = count
   }
 
-
-  /**
-   * Load ready pools
-   */
-  async loadReadyPools(): Promise<void>
-  {
-    let count;
-    try
-    {
-      const resultsRes = await this.dbService.query(`SELECT COUNT(*) as "__COUNT" FROM cltp.pool_ready;`)
-
-      count = +(resultsRes as { recordset: CountSQLResponse[] }).recordset[0].__COUNT
-    }
-    catch (e)
-    {
-      alert("Could not count the entries in the database!")
-      console.error(e)
-      return
-    }
-
-    this.poolsReady = count
-  }
 
 
   /**

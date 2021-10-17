@@ -67,11 +67,12 @@
           </p>
         </div>
         <div class="card-footer d-flex justify-content-center">
-          <div *ngIf="poolsReady" class="badge bg-primary mx-1">
-            Pools: {{ poolsReady }}
-          </div>
-          <div *ngIf="probeOrdersReady" class="badge bg-primary mx-1">
-            Probe Orders: {{ probeOrdersReady }}
+          <div
+            *ngIf="probeOrdersReady"
+            class="badge bg-primary mx-1"
+            title="Actually its probe orders ready"
+          >
+            Pools: {{ probeOrdersReady }}
           </div>
         </div>
       </div>

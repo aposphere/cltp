@@ -7,11 +7,7 @@
   </h4>
 
   <button
-    *ngIf="
-      (probeResults.length > 0 || internalProbeResults.length > 0) &&
-      probeResultsDownloaded &&
-      internalProbeResultsDownloaded
-    "
+    *ngIf="probeResults.length > 0 && probeResultsDownloaded"
     type="button"
     class="btn btn-outline-success mb-1 mx-1"
     (click)="markInterpretationsAsExported()"
@@ -19,60 +15,22 @@
     Mark as Exported
   </button>
 
-  <p
-    *ngIf="probeResults.length === 0 && internalProbeResults.length === 0"
-    class="text-muted"
-  >
+  <p *ngIf="probeResults.length === 0" class="text-muted">
     No pending results available, come back later.
   </p>
+  <div *ngIf="probeResults.length > 0">
+    <button
+      type="button"
+      class="btn btn-primary mb-1 mx-1"
+      (click)="downloadProbeResults()"
+    >
+      Download Probe Results
+    </button>
 
-  <ul
-    ngbNav
-    #nav="ngbNav"
-    [(activeId)]="active"
-    [destroyOnHide]="false"
-    class="nav-tabs"
-  >
-    <li [ngbNavItem]="1" *ngIf="probeResults.length > 0">
-      <a ngbNavLink>Download Probe Results</a>
-      <ng-template ngbNavContent>
-        <button
-          type="button"
-          class="btn btn-primary mb-1 mx-1"
-          (click)="downloadProbeResults()"
-        >
-          Download Probe Results
-        </button>
-
-        <ul class="list-group">
-          <li *ngFor="let probeResult of probeResults" class="list-group-item">
-            <pre class="m-0">{{ probeResult.label }}</pre>
-          </li>
-        </ul>
-      </ng-template>
-    </li>
-    <li [ngbNavItem]="2" *ngIf="internalProbeResults.length > 0">
-      <a ngbNavLink>Download Internal Probe Results</a>
-      <ng-template ngbNavContent>
-        <button
-          type="button"
-          class="btn btn-primary mb-1 mx-1"
-          (click)="downloadInternalProbeResults()"
-        >
-          Download Internal Probe Results
-        </button>
-
-        <ul class="list-group">
-          <li
-            *ngFor="let probeResult of internalProbeResults"
-            class="list-group-item"
-          >
-            {{ probeResult.label }}
-          </li>
-        </ul>
-      </ng-template>
-    </li>
-  </ul>
-
-  <div [ngbNavOutlet]="nav" class="mt-2"></div>
+    <ul class="list-group">
+      <li *ngFor="let probeResult of probeResults" class="list-group-item">
+        <pre class="m-0">{{ probeResult.label }}</pre>
+      </li>
+    </ul>
+  </div>
 </div>
