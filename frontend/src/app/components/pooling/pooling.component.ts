@@ -10,6 +10,7 @@ import { ConfigService } from 'src/app/services/config.service';
 import { Credentials } from 'src/app/interfaces/credentials';
 import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
+import { ProbeOrder } from 'src/app/interfaces/probe-order.table';
 
 /** Workflow steps */
 const steps = ["identify-pool", "scan-samples", "done"] as const
@@ -124,7 +125,7 @@ export class PoolingComponent implements OnDestroy
     try
     {
       // Get pools to verify
-      const res = await this.dbService.query(`SELECT pool_id FROM cltp.pool WHERE pool_id = '${ poolId }'`)
+      let res = await this.dbService.query(`SELECT pool_id FROM cltp.pool WHERE pool_id = '${ poolId }'`)
 
       const [existingPool] = (res as { recordset: Pool[] }).recordset
 
@@ -134,6 +135,19 @@ export class PoolingComponent implements OnDestroy
         this.toastsService.show(`A Pool can only be used once!`, { classname: 'bg-danger text-light' })
         return
       }
+
+      // Get pools to verify
+      res = await this.dbService.query(`SELECT * FROM cltp.probe_order WHERE barcode_nummer = '${ poolId }'`)
+
+      const [existingProbeOrder] = (res as { recordset: ProbeOrder[] }).recordset
+
+      // Check for unused existing probe order and prompt
+      if (!existingProbeOrder)
+      {
+        this.toastsService.show(`No Probe Order has been registered for this pool. Please upload it first before pooling samples.`, { classname: 'bg-danger text-light' })
+        return
+      }
+
     }
     catch (e)
     {

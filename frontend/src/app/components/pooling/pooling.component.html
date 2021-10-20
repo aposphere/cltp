@@ -17,6 +17,12 @@
     <button class="btn btn-outline-secondary mt-3 ms-2" routerLink="/">
       Home
     </button>
+    <button
+      class="btn btn-outline-secondary mt-3 ms-2"
+      routerLink="/pool-rack-mapping"
+    >
+      Pool/Rack Mapping
+    </button>
   </ng-container>
 
   <ng-container *ngIf="currentStep === 'identify-pool'">
@@ -80,33 +86,31 @@
       with the current pool.
     </p>
 
-    <div class="border rounded bg-light p-3">
-      <div *ngIf="inputDevice === 'manual'">
-        <div class="form-group">
-          <label for="next-sample-id">Next Sample ID</label>
-          <input
-            type="text"
-            class="form-control"
-            id="next-p-id"
-            placeholder="Next Sample ID"
-            [(ngModel)]="nextSampleId"
-          />
-          <button
-            class="btn btn-outline-primary mt-3"
-            (click)="manualNextSampleId(nextSampleId)"
-            [disabled]="!nextSampleId"
-          >
-            Confirm
-          </button>
-        </div>
+    <div *ngIf="inputDevice === 'manual'">
+      <div class="form-group">
+        <label for="next-sample-id">Next Sample ID</label>
+        <input
+          type="text"
+          class="form-control"
+          id="next-p-id"
+          placeholder="Next Sample ID"
+          [(ngModel)]="nextSampleId"
+        />
+        <button
+          class="btn btn-outline-primary mt-3"
+          (click)="manualNextSampleId(nextSampleId)"
+          [disabled]="!nextSampleId"
+        >
+          Confirm
+        </button>
       </div>
+    </div>
 
-      <div *ngIf="inputDevice === 'camera'" style="width: 200px">
-        <zxing-scanner
-          (scanSuccess)="sampleScanSuccessHandler($event)"
-          (scanError)="scanErrorHandler($event)"
-        ></zxing-scanner>
-      </div>
+    <div *ngIf="inputDevice === 'camera'" style="width: 200px">
+      <zxing-scanner
+        (scanSuccess)="sampleScanSuccessHandler($event)"
+        (scanError)="scanErrorHandler($event)"
+      ></zxing-scanner>
     </div>
 
     <button
@@ -149,7 +153,7 @@
     </div>
   </div>
 
-  <div *ngIf="poolId" class="container pt-4">
+  <div *ngIf="poolId && currentStep === 'done'" class="container pt-4">
     <div class="form-group">
       <label for="pooling-source">Source (optional)</label>
       <input
@@ -170,5 +174,11 @@
         [(ngModel)]="comment"
       ></textarea>
     </div>
+  </div>
+
+  <div class="pt-3 text-center" *ngIf="currentStep === 'scan-samples'">
+    <button class="btn btn-outline-danger mt-3 ms-2" (click)="reset()">
+      Reset
+    </button>
   </div>
 </div>

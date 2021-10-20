@@ -17,6 +17,12 @@
     <button class="btn btn-outline-secondary mt-3 ms-2" routerLink="/">
       Home
     </button>
+    <button
+      class="btn btn-outline-secondary mt-3 ms-2"
+      routerLink="/plate-pcr-plate-mapping"
+    >
+      Plate/PCR Plate Mapping
+    </button>
   </ng-container>
 
   <ng-container *ngIf="currentStep === 'identify-plate'">
@@ -169,5 +175,11 @@
         </li>
       </ul>
     </div>
+  </div>
+
+  <div class="pt-3 text-center" *ngIf="currentStep === 'scan-racks'">
+    <button class="btn btn-outline-danger mt-3 ms-2" (click)="reset()">
+      Reset
+    </button>
   </div>
 </div>
