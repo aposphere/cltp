@@ -399,8 +399,8 @@ export class UploadResultsComponent implements OnDestroy
           resultData.rackMaps.push(rackMap)
         }
 
-        y_ = mappingEntry.rack_coordinate.substr(0, 1)
-        x = +mappingEntry.rack_coordinate.substr(1)
+        y_ = mappingEntry.pool_coordinate.substr(0, 1)
+        x = +mappingEntry.pool_coordinate.substr(1)
 
         if (rackMap.map[ALPHABET.indexOf(y_)]) rackMap.map[ALPHABET.indexOf(y_)][x - 1] = interpretation
       }
@@ -476,7 +476,13 @@ export class UploadResultsComponent implements OnDestroy
       this.metricsService.log({ metric: 'pcr-runs', value: 1 })
 
       // Log pool results to metrics
-      this.metricsService.log({ metric: 'pool-results', value: this.resultData.interpretations.length })
+      this.metricsService.log({ metric: 'pool-results', value: this.resultData.entriesTested })
+
+      // Log positive pool results to metrics
+      this.metricsService.log({ metric: 'positive-pool-results', value: this.resultData.entriesPos })
+
+      // Log negative pool results to metrics
+      this.metricsService.log({ metric: 'negative-pool-results', value: this.resultData.entriesNeg + this.resultData.entriesUn })
 
 
       this.toastsService.show(`Results for PCR Plate '${ this.pcrPlateId }' successfully inserted into the database`, { classname: 'bg-success text-light' })

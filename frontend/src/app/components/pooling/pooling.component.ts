@@ -11,6 +11,7 @@ import { Credentials } from 'src/app/interfaces/credentials';
 import { AuditLog } from 'src/app/interfaces/audit-log.table';
 import { sqlValueFormatter } from 'src/app/helpers/sql-value-formatter';
 import { ProbeOrder } from 'src/app/interfaces/probe-order.table';
+import { MetricsService } from 'src/app/services/metrics.service';
 
 /** Workflow steps */
 const steps = ["identify-pool", "scan-samples", "done"] as const
@@ -53,6 +54,7 @@ export class PoolingComponent implements OnDestroy
 
   constructor(
     public dbService: DBService,
+    public metricsService: MetricsService,
     public configService: ConfigService,
     public stateService: StateService,
     public toastsService: ToastsService,
@@ -309,6 +311,9 @@ export class PoolingComponent implements OnDestroy
       try
       {
         await this.dbService.query(q)
+
+        // Log samples to metrics
+        this.metricsService.log({ metric: 'internal-samples', value: this.addedSamples.length })
 
         this.toastsService.show(`Pooling '${ this.poolId }' successfully inserted into the database`, { classname: 'bg-success text-light' })
       }

@@ -40,6 +40,16 @@ export class AppComponent implements OnDestroy
       delay(200),
       tap(() => this.flash = false),
     ).subscribe((v) => { console.info("Successful Scan:", v) });
+
+
+    // Always ask before closing
+    window.addEventListener("beforeunload", (event) =>
+    {
+      event.preventDefault();
+      console.info('Attempt to close interface …');
+      event.returnValue = 'Please make sure you have saved everything to the database before closing the interface!';
+      return event;
+   });
   }
 
   /**

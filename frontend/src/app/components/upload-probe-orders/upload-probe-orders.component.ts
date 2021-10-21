@@ -14,6 +14,8 @@ import { jsonValidator } from '../../helpers/json-validator';
 import { probeOrderValidator } from '../../helpers/probe-order-validator';
 import { sqlValueFormatter } from '../../helpers/sql-value-formatter';
 
+const MAX_FILE_NUMBER = 100
+
 @Component({
   selector: 'app-upload-probe-orders',
   templateUrl: './upload-probe-orders.component.html',
@@ -61,6 +63,9 @@ export class UploadProbeOrdersComponent implements OnDestroy
     const t = ev.target as HTMLInputElement
     if (t.files && t.files[0])
     {
+      // Limit the number of files
+      if (t.files.length > MAX_FILE_NUMBER) return alert("You cannot upload more then 100 JSONs at once.")
+
       // Save the files
       this.files = Array.from(t.files)
 
@@ -148,7 +153,7 @@ export class UploadProbeOrdersComponent implements OnDestroy
     }
     catch (e)
     {
-      alert("Could not insert into database, please check the logs for errors!")
+      alert("Could not insert into database, please check the logs for errors!\nYou might have tried to upload duplicated Probe Orders?")
       console.error(e)
       return
     }
