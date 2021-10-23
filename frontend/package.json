@@ -1,6 +1,6 @@
 {
   "name": "cltp",
-  "version": "0.4.0-rc.7",
+  "version": "0.4.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
