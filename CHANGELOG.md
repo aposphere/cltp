@@ -1,5 +1,7 @@
 # Changelog
 
-## <=v0.4.0
+## <=v1.0.0
 
-No changelog available for early versions :)
+The final state of the platform on `2021-10-23`.
+
+_No changelog available for early versions :)_
