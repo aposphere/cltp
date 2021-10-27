@@ -162,8 +162,17 @@ export class PoolRackMappingComponent implements OnDestroy
             if (!confirm("This rack has already been filled previously with pools but is not yet mapped to a plate. Do you want to proceed anyway and override it?")) return
           }
 
-          // New rack iteration
-          this.rackI = mostRecentRack.i + 1
+          // Check the rack iteration
+          if (isNaN(+mostRecentRack.i))
+          {
+            console.warn(`The iteration of rack '${ mostRecentRack.rack_id }' is not a number: '${ +mostRecentRack.i }' => resetting it to 0`)
+            mostRecentRack.i = 0
+          }
+          else
+          {
+            // New rack iteration +1
+            this.rackI = +mostRecentRack.i + 1
+          }
         }
         catch (e)
         {
