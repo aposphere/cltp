@@ -79,7 +79,7 @@ const generateEntry = (i, c, cq) =>
 `
 "${i}","${c}",,,"RNA IC",,,,"${cq[0]}"
 "${i}","${c}",,,"N1N2",,,,"${cq[1]}"
-"${i}","${c}",,,"Human IC",,,,${cq[2]}"`
+"${i}","${c}",,,"Human IC",,,,"${cq[2]}"`
 
 
 /** ALGO */
